@@ -4,9 +4,14 @@
     "Scottcjn/rustchain-bounties#16984",
     "zhangjiayang6835-cyber/bounty-plaza#1292",
     "NSPG13/agent-bounties#1388",
-    "NSPG13/agent-bounties#1387"
+    "NSPG13/agent-bounties#1387",
+    "ditto-assistant/ditto-subnet#2054",
+    "ditto-assistant/ditto-subnet#2047",
+    "ditto-assistant/ditto-subnet#2046",
+    "ditto-assistant/ditto-subnet#2044",
+    "zhangjiayang6835-cyber/bounty-plaza#1336"
   ],
-  "last_scan": 1790800558.6771867,
+  "last_scan": 1790803423.4291146,
   "wallets_alerted": [],
   "agentbounty_seen": [
     "0x73fa8fec134f131caa88fe3e0e16006485c098001344857e26640c51744ce234",
@@ -14,6 +19,7 @@
     "0xebad06e2af596702f1b141baf304f32eb128c6f6af90ff28bbcb67553c182f68",
     "0xca7fc391512ce0d416ee7fa9c80da1ad4e62391facaac126196d35ba1803ad80",
     "0x782e1ec167978a1ccdccdaa75e28356ac964176ee3b3a97057008772b4d8dfb0",
-    "0x2bfcbfe1dda226de102bfec5853e631c198ce541820bbe8c5c03536200de1876"
+    "0x2bfcbfe1dda226de102bfec5853e631c198ce541820bbe8c5c03536200de1876",
+    "0x8d6f706147830368532e1ac89fbe323830f856dbdd4af9f35229e761bfe54765"
   ]
 }
