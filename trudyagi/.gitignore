@@ -1,0 +1,19 @@
+# Trudyagi .gitignore — keep role prompts + code, ignore local test artifacts
+
+# Local env (contains secrets)
+.env
+
+# Per-task artifacts (regenerated on every run)
+# Keep the directory structure but ignore contents
+tasks/*
+!tasks/.gitkeep
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,10 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Trudyagi local test artifacts (commits the directory structure only)
+trudyagi/tasks/task-*
+trudyagi/.env
+
+# OS files
+.DS_Store
