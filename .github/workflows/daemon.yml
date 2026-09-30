@@ -1,14 +1,16 @@
-name: Crypto Daemon 24/7
+name: Crypto Daemon + Sniper 24/7
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # every 5 min
+    - cron: '*/5 * * * *'  # daemon every 5 min
+    - cron: '*/30 * * * *'  # sniper every 30 min
   workflow_dispatch: {}
   push:
     branches: [main]
 
 jobs:
-  run-daemon:
+  daemon:
+    if: github.event_name != 'schedule' || github.run_id % 6 != 0
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -31,4 +33,30 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A || true
           git commit -m "daemon state update $(date -u +%FT%TZ)" || true
+          git push || true
+
+  sniper:
+    if: github.event_name == 'schedule' && github.run_id % 6 == 0 || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install deps
+        run: pip install requests
+      - name: Run sniper
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT: ${{ secrets.TG_CHAT }}
+        run: python sniper.py
+      - name: Commit state
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A || true
+          git commit -m "sniper state update $(date -u +%FT%TZ)" || true
           git push || true
