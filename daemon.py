@@ -41,6 +41,10 @@ PRS = [
     ("Heliobond/frontend", 676, 100, "registry decoder"),
     ("ancore-org/ancore", 1487, 0, "retry wrapper"),
     ("StellarRoute/WaveFlow", 71, 100, "CONTRIBUTING.md + Wave bounty workflow"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1006, 50, "contract-ids key-handling"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1007, 50, "authorization key+net guards"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1008, 50, "authorization-trees key+net guards"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1009, 50, "setup-linux key-handling"),
 ]
 
 HEADERS = {
