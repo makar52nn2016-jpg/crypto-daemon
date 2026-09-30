@@ -2,15 +2,13 @@ name: Crypto Daemon + Sniper 24/7
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # daemon every 5 min
-    - cron: '*/30 * * * *'  # sniper every 30 min
+    - cron: '*/5 * * * *'  # daemon + sniper every 5 min
   workflow_dispatch: {}
   push:
     branches: [main]
 
 jobs:
   daemon:
-    if: github.event_name != 'schedule' || github.run_id % 6 != 0
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -36,7 +34,6 @@ jobs:
           git push || true
 
   sniper:
-    if: github.event_name == 'schedule' && github.run_id % 6 == 0 || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
