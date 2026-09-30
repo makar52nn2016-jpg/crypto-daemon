@@ -13,7 +13,7 @@
       "review_state": "APPROVED",
       "review_by": "sshdopey",
       "ci_state": "failure",
-      "updated_at": "2026-09-30T04:32:37Z"
+      "updated_at": "2026-09-30T16:50:23Z"
     },
     "soroban-forge-labs/soroban-forge#488": {
       "merged": false,
@@ -73,8 +73,8 @@
     "StellarCanary/ProtocolCanary-Action#306": {
       "merged": false,
       "state": "open",
-      "mergeable": true,
-      "mergeable_state": "blocked",
+      "mergeable": false,
+      "mergeable_state": "dirty",
       "title": "test: cover signal-kill and writeSummary-throws branches in main.ts run() (#271)",
       "review_state": null,
       "review_by": null,
@@ -85,7 +85,7 @@
       "merged": false,
       "state": "open",
       "mergeable": true,
-      "mergeable_state": "blocked",
+      "mergeable_state": "behind",
       "title": "test: reject non-array assert value (string, integer, boolean) (#225)",
       "review_state": null,
       "review_by": null,
@@ -95,8 +95,8 @@
     "StellarCanary/ProtocolCanary-Fixtures#242": {
       "merged": false,
       "state": "open",
-      "mergeable": true,
-      "mergeable_state": "blocked",
+      "mergeable": false,
+      "mergeable_state": "dirty",
       "title": "test: accept a fixture whose expected_file resolves to an existing file (#226)",
       "review_state": null,
       "review_by": null,
@@ -104,147 +104,56 @@
       "updated_at": "2026-09-30T05:51:04Z"
     },
     "Soroban-Cookbook/Soroban_Cookbook_online#1006": {
-      "merged": false,
-      "state": "open",
-      "mergeable": true,
-      "mergeable_state": "unstable",
-      "title": "Add key-handling guard for concepts/contract-ids.md",
-      "review_state": null,
-      "review_by": null,
-      "ci_state": "pending",
-      "updated_at": "2026-09-30T04:23:36Z"
+      "merged": true,
+      "state": "merged"
     },
     "Soroban-Cookbook/Soroban_Cookbook_online#1007": {
-      "merged": false,
-      "state": "open",
-      "mergeable": true,
-      "mergeable_state": "unstable",
-      "title": "Add key-handling + network-risk guards for concepts/authorization.md",
-      "review_state": null,
-      "review_by": null,
-      "ci_state": "pending",
-      "updated_at": "2026-09-30T04:23:37Z"
+      "merged": true,
+      "state": "merged"
     },
     "Soroban-Cookbook/Soroban_Cookbook_online#1008": {
-      "merged": false,
-      "state": "open",
-      "mergeable": true,
-      "mergeable_state": "unstable",
-      "title": "Add key-handling + network-risk guards for concepts/authorization-trees.md",
-      "review_state": null,
-      "review_by": null,
-      "ci_state": "pending",
-      "updated_at": "2026-09-30T04:23:38Z"
+      "merged": true,
+      "state": "merged"
     },
     "Soroban-Cookbook/Soroban_Cookbook_online#1009": {
-      "merged": false,
-      "state": "open",
-      "mergeable": true,
-      "mergeable_state": "unstable",
-      "title": "Add key-handling guard for getting-started/setup-linux.md",
-      "review_state": null,
-      "review_by": null,
-      "ci_state": "pending",
-      "updated_at": "2026-09-30T04:23:39Z"
+      "merged": true,
+      "state": "merged"
     },
     "Soroban-Cookbook/Soroban_Cookbook_online#1010": {
-      "merged": false,
-      "state": "open",
-      "mergeable": true,
-      "mergeable_state": "unstable",
-      "title": "Add unaudited-example notice to security/token-audit.md",
-      "review_state": null,
-      "review_by": null,
-      "ci_state": "pending",
-      "updated_at": "2026-09-30T04:23:40Z"
+      "merged": true,
+      "state": "merged"
     },
     "Soroban-Cookbook/Soroban_Cookbook_online#1011": {
-      "merged": false,
-      "state": "open",
-      "mergeable": true,
-      "mergeable_state": "unstable",
-      "title": "Add unaudited-example notice to security/fundamentals.md",
-      "review_state": null,
-      "review_by": null,
-      "ci_state": "pending",
-      "updated_at": "2026-09-30T04:23:41Z"
+      "merged": true,
+      "state": "merged"
     },
     "Soroban-Cookbook/Soroban_Cookbook_online#1012": {
-      "merged": false,
-      "state": "open",
-      "mergeable": true,
-      "mergeable_state": "unstable",
-      "title": "Add unaudited-example notice to security/upgrade-checklist.md",
-      "review_state": null,
-      "review_by": null,
-      "ci_state": "pending",
-      "updated_at": "2026-09-30T04:23:42Z"
+      "merged": true,
+      "state": "merged"
     },
     "Soroban-Cookbook/Soroban_Cookbook_online#1013": {
-      "merged": false,
-      "state": "open",
-      "mergeable": true,
-      "mergeable_state": "unstable",
-      "title": "Add unaudited-example notice to security/defi-patterns.md",
-      "review_state": null,
-      "review_by": null,
-      "ci_state": "pending",
-      "updated_at": "2026-09-30T04:23:43Z"
+      "merged": true,
+      "state": "merged"
     },
     "Soroban-Cookbook/Soroban_Cookbook_online#1017": {
-      "merged": false,
-      "state": "open",
-      "mergeable": true,
-      "mergeable_state": "unstable",
-      "title": "Add key-handling guard for getting-started/setup-windows.md",
-      "review_state": null,
-      "review_by": null,
-      "ci_state": "pending",
-      "updated_at": "2026-09-30T05:21:32Z"
+      "merged": true,
+      "state": "merged"
     },
     "Soroban-Cookbook/Soroban_Cookbook_online#1018": {
-      "merged": false,
-      "state": "open",
-      "mergeable": true,
-      "mergeable_state": "unstable",
-      "title": "Add key-handling guard for getting-started/setup-macos.md",
-      "review_state": null,
-      "review_by": null,
-      "ci_state": "pending",
-      "updated_at": "2026-09-30T05:21:35Z"
+      "merged": true,
+      "state": "merged"
     },
     "Soroban-Cookbook/Soroban_Cookbook_online#1019": {
-      "merged": false,
-      "state": "open",
-      "mergeable": true,
-      "mergeable_state": "unstable",
-      "title": "Add key-handling guard for getting-started/deploy-testnet.md",
-      "review_state": null,
-      "review_by": null,
-      "ci_state": "pending",
-      "updated_at": "2026-09-30T05:21:38Z"
+      "merged": true,
+      "state": "merged"
     },
     "Soroban-Cookbook/Soroban_Cookbook_online#1020": {
-      "merged": false,
-      "state": "open",
-      "mergeable": true,
-      "mergeable_state": "unstable",
-      "title": "Add unaudited-example notice to patterns/overview.md",
-      "review_state": null,
-      "review_by": null,
-      "ci_state": "pending",
-      "updated_at": "2026-09-30T05:21:41Z"
+      "merged": true,
+      "state": "merged"
     },
     "Soroban-Cookbook/Soroban_Cookbook_online#1021": {
-      "merged": false,
-      "state": "open",
-      "mergeable": true,
-      "mergeable_state": "unstable",
-      "title": "Add unaudited-example notice to patterns/examples-index.mdx",
-      "review_state": null,
-      "review_by": null,
-      "ci_state": "pending",
-      "updated_at": "2026-09-30T05:21:44Z"
+      "merged": true,
+      "state": "merged"
     },
     "UniversalAviator420/bounty-sandbox#12": {
       "merged": false,
@@ -291,9 +200,9 @@
       "updated_at": "2026-09-30T05:21:29Z"
     }
   },
-  "last_heartbeat": 1790751583.2540967,
+  "last_heartbeat": 1790800530.737591,
   "last_comment_seen": {
-    "Heliobond/frontend#676": 5904088566,
+    "Heliobond/frontend#676": 5915738141,
     "soroban-forge-labs/soroban-forge#488": 5904647289,
     "gear5labs/chenpilot-client#185": 5904686897,
     "gear5labs/chenpilot-client#186": 5904698684,
@@ -322,64 +231,73 @@
   },
   "seen_bounties": {},
   "pinged_prs": {},
-  "last_discovery": 1790751567.599705,
+  "last_discovery": 1790800519.718354,
   "last_top_bounties": [
     {
-      "repo": "lumenmap/lumenmap",
-      "num": 383,
-      "title": "Add asset-issuer intelligence view for top anchors and SAC issuers",
-      "app_count": 4,
-      "created": "2026-09-29",
+      "repo": "ChainLearnOfficial/chainlearn-contracts",
+      "num": 495,
+      "title": "No authorization tests for progress-tracker admin functions (create_course, arch",
+      "app_count": 5,
+      "created": "2026-09-30",
       "labels": [
-        "enhancement"
+        "tests",
+        "rust",
+        "medium"
       ],
-      "url": "https://github.com/lumenmap/lumenmap/issues/383"
+      "url": "https://github.com/ChainLearnOfficial/chainlearn-contracts/issues/495"
     },
     {
-      "repo": "soroban-forge-labs/soroban-forge",
-      "num": 469,
-      "title": "bindings ts: run_stellar_bindings's --output-dir flag was never verified against",
+      "repo": "ChainLearnOfficial/chainlearn-contracts",
+      "num": 492,
+      "title": "revoke_delegation is blocked during pause, preventing learners from revoking mal",
       "app_count": 5,
-      "created": "2026-09-29",
+      "created": "2026-09-30",
       "labels": [
         "bug",
-        "trivial",
-        "module:bindings"
+        "rust",
+        "security",
+        "medium"
       ],
-      "url": "https://github.com/soroban-forge-labs/soroban-forge/issues/469"
+      "url": "https://github.com/ChainLearnOfficial/chainlearn-contracts/issues/492"
     },
     {
-      "repo": "lumenmap/lumenmap",
-      "num": 382,
-      "title": "Add embeddable read-only dashboard widgets via iframe",
+      "repo": "ChainLearnOfficial/chainlearn-contracts",
+      "num": 491,
+      "title": "enroll_checked is pub and bypasses require_not_paused, allowing enrollment durin",
       "app_count": 5,
-      "created": "2026-09-29",
+      "created": "2026-09-30",
       "labels": [
-        "enhancement"
+        "bug",
+        "rust",
+        "medium"
       ],
-      "url": "https://github.com/lumenmap/lumenmap/issues/382"
+      "url": "https://github.com/ChainLearnOfficial/chainlearn-contracts/issues/491"
     },
     {
-      "repo": "lumenmap/lumenmap",
-      "num": 390,
-      "title": "Add liquidity-pool and claimable-balance activity breakdown",
+      "repo": "ChainLearnOfficial/chainlearn-contracts",
+      "num": 494,
+      "title": "Gas benchmark assertions are trivially true (assert!(cost > 0)) -- no regression",
       "app_count": 6,
-      "created": "2026-09-29",
+      "created": "2026-09-30",
       "labels": [
-        "enhancement"
+        "tests",
+        "rust",
+        "low"
       ],
-      "url": "https://github.com/lumenmap/lumenmap/issues/390"
+      "url": "https://github.com/ChainLearnOfficial/chainlearn-contracts/issues/494"
     },
     {
-      "repo": "lumenmap/lumenmap",
-      "num": 388,
-      "title": "Add PWA install shell with offline last-successful dashboard cache",
-      "app_count": 6,
-      "created": "2026-09-29",
+      "repo": "ChainLearnOfficial/chainlearn-contracts",
+      "num": 502,
+      "title": "batch_claim_reward does not append claim records to history -- get_claim_history",
+      "app_count": 8,
+      "created": "2026-09-30",
       "labels": [
-        "enhancement"
+        "bug",
+        "rust",
+        "medium"
       ],
-      "url": "https://github.com/lumenmap/lumenmap/issues/388"
+      "url": "https://github.com/ChainLearnOfficial/chainlearn-contracts/issues/502"
     }
   ],
   "prev_ton": 0.104125546,

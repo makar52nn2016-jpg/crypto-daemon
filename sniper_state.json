@@ -1,10 +1,19 @@
 {
-  "claimed": [],
-  "last_scan": 1790756041.9122012,
+  "claimed": [
+    "zhangjiayang6835-cyber/bounty-plaza#1660",
+    "Scottcjn/rustchain-bounties#16984",
+    "zhangjiayang6835-cyber/bounty-plaza#1292",
+    "NSPG13/agent-bounties#1388",
+    "NSPG13/agent-bounties#1387"
+  ],
+  "last_scan": 1790800558.6771867,
   "wallets_alerted": [],
   "agentbounty_seen": [
     "0x73fa8fec134f131caa88fe3e0e16006485c098001344857e26640c51744ce234",
     "0xd6334c82ff0301926be93885db16137309b98f395cbf8a7e01b6b8540a120ea1",
-    "0xebad06e2af596702f1b141baf304f32eb128c6f6af90ff28bbcb67553c182f68"
+    "0xebad06e2af596702f1b141baf304f32eb128c6f6af90ff28bbcb67553c182f68",
+    "0xca7fc391512ce0d416ee7fa9c80da1ad4e62391facaac126196d35ba1803ad80",
+    "0x782e1ec167978a1ccdccdaa75e28356ac964176ee3b3a97057008772b4d8dfb0",
+    "0x2bfcbfe1dda226de102bfec5853e631c198ce541820bbe8c5c03536200de1876"
   ]
 }
