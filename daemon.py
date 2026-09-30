@@ -31,6 +31,10 @@ ETH_ADDR = "0x30450A8B96535e4ee1897f1E59ff2556f6191bcc"
 BTC_ADDR = "bc1q0f99e8pcp6n6wgfv09kyea3getra0qwme98xm5"
 SOL_ADDR = "25f1M7tdwaUq1LWku5F2LkZXesEkADmr3t8VdmpGp13D"
 TRX_ADDR = "TNQdBautGuPihGXqwNJYLwHWLjVHs2p4A8"
+# TON wallet — mainnet, USDT (jetton) + native TON
+TON_ADDR = "UQDyOVPv7hrvOePpOLQL5SiV2VxXs4P5A3A3rHOb9BvvOPtH"
+# TON USDT jetton master address (EQ... mainnet)
+TON_USDT_JETTON = "EQCxE6mUtPJKnaCM4Wv7vLyEh2tXJqRR2vshU9bCSLVKQR2P"
 
 STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "state.json")
 
@@ -83,6 +87,7 @@ DISCOVERY_MAX_RESULTS = 5  # Top 5 least-competed issues per discovery run
 def load_state():
     default = {
         "prev_xlm": 9.8081229, "prev_eth": 0.0, "prev_btc": 0.0, "prev_sol": 0.0,
+        "prev_ton": 0.0, "prev_ton_usdt": 0.0,
         "prev_pr_states": {}, "last_heartbeat": 0, "last_comment_seen": {},
         "seen_bounties": {}, "pinged_prs": {},
         "last_discovery": 0, "last_top_bounties": [],
@@ -207,11 +212,63 @@ def check_sol(prev):
     return prev
 
 
+def check_ton(prev):
+    """Check native TON balance via Tonhub/Tonapi public API."""
+    try:
+        # tonapi.io is a free public API for TON
+        r = requests.get(f"https://tonapi.io/v2/accounts/{TON_ADDR}", timeout=10)
+        if r.status_code == 200:
+            data = r.json()
+            # balance is in nanotons (1 TON = 10^9 nanoton)
+            bal = data.get("balance", 0) / 1e9
+            if bal > prev + 0.001:
+                delta = bal - prev
+                tg_send(
+                    f"💰 TON INCOMING: +{delta:.4f} TON\n"
+                    f"Баланс: {prev:.4f} → {bal:.4f} TON\n"
+                    f"Адрес: {TON_ADDR}\n"
+                    f"https://tonscan.org/address/{TON_ADDR}"
+                )
+                return bal
+            return bal
+    except Exception as e:
+        log.warning("ton: %s", e)
+    return prev
+
+
+def check_ton_usdt(prev):
+    """Check USDT (jetton) balance on TON."""
+    try:
+        # tonapi.io jetton balances
+        r = requests.get(f"https://tonapi.io/v2/accounts/{TON_ADDR}/jettons", timeout=10)
+        if r.status_code == 200:
+            data = r.json()
+            for j in data.get("jettons", []):
+                # Jetton master: EQCxE6mUtPJKnaCM4Wv7vLyEh2tXJqRR2vshU9bCSLVKQR2P = TON USDT
+                if j.get("jetton", {}).get("address", "").startswith("EQCxE6mUt"):
+                    # balance is in jetton units (USDT has 6 decimals on TON)
+                    bal = int(j.get("balance", 0)) / 1e6
+                    if bal > prev + 0.001:
+                        delta = bal - prev
+                        tg_send(
+                            f"💰 USDT (TON) INCOMING: +{delta:.2f} USDT\n"
+                            f"Баланс: {prev:.2f} → {bal:.2f} USDT\n"
+                            f"Адрес: {TON_ADDR}"
+                        )
+                        return bal
+                    return bal
+    except Exception as e:
+        log.warning("ton_usdt: %s", e)
+    return prev
+
+
 def check_wallets(state):
     state["prev_xlm"] = check_xlm(state.get("prev_xlm", 9.8081229))
     state["prev_eth"] = check_eth(state.get("prev_eth", 0.0))
     state["prev_btc"] = check_btc(state.get("prev_btc", 0.0))
     state["prev_sol"] = check_sol(state.get("prev_sol", 0.0))
+    state["prev_ton"] = check_ton(state.get("prev_ton", 0.0))
+    state["prev_ton_usdt"] = check_ton_usdt(state.get("prev_ton_usdt", 0.0))
     return state
 
 
@@ -507,6 +564,7 @@ def maybe_heartbeat(state, action_count):
             f"Action items this run: {action_count}\n"
             f"XLM: {state.get('prev_xlm', 0):.4f} | ETH: {state.get('prev_eth', 0):.6f}\n"
             f"BTC: {state.get('prev_btc', 0):.8f} | SOL: {state.get('prev_sol', 0):.6f}\n"
+            f"TON: {state.get('prev_ton', 0):.4f} | USDT(TON): {state.get('prev_ton_usdt', 0):.2f}\n"
             f"Discovery: каждые 6h ищет least-competed Stellar Wave issues"
         )
     return state
