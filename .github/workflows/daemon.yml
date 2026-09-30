@@ -7,53 +7,58 @@ on:
   push:
     branches: [main]
 
+# CRITICAL: required for GITHUB_TOKEN to have write access — without this,
+# the daemon's state.json commits fail silently (was broken for 28h+).
+permissions:
+  contents: write
+
+# Run only one workflow at a time — prevents race condition when daemon+sniper
+# both try to commit state.json simultaneously.
+concurrency:
+  group: daemon-sniper
+  cancel-in-progress: false
+
 jobs:
-  daemon:
+  daemon-and-sniper:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
       - name: Install deps
         run: pip install requests
+
       - name: Run daemon
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
           TG_CHAT: ${{ secrets.TG_CHAT }}
         run: python daemon.py
-      - name: Commit state
-        continue-on-error: true
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A || true
-          git commit -m "daemon state update $(date -u +%FT%TZ)" || true
-          git push || true
 
-  sniper:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install deps
-        run: pip install requests
       - name: Run sniper
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
           TG_CHAT: ${{ secrets.TG_CHAT }}
         run: python sniper.py
+
       - name: Commit state
         continue-on-error: true
         run: |
+          # Rebase on latest main to avoid "non-fast-forward" push failures
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --no-edit origin main || true
           git add -A || true
-          git commit -m "sniper state update $(date -u +%FT%TZ)" || true
-          git push || true
+          git commit -m "daemon+sniper state update $(date -u +%FT%TZ)" || true
+          # Push using GITHUB_TOKEN (write access via permissions: contents: write)
+          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
