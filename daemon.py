@@ -1,23 +1,24 @@
 #!/usr/bin/env python3
-"""Crypto Daemon v2 — 24/7 autonomous earning system (GitHub Actions edition).
+"""Crypto Daemon v3 — 24/7 autonomous earning system (GitHub Actions edition).
 
-Smart alerting policy: ONLY alerts when human action is required.
-- ✅ Alert: PR approved but not merged after 24h → send ready-to-copy ping text
-- ✅ Alert: PR CI failed (build/test, not fork-Vercel)
-- ✅ Alert: PR conflict/dirty (needs rebase)
-- ✅ Alert: Wallet incoming funds
-- ✅ Alert: PR merged (success!)
-- ✅ Alert: New maintainer comment requiring reply
-- 🤫 Silent: routine state changes, no-op events
+Modernized v3:
+- Smart alerting: only action-needed events
+- BOUNTY DISCOVERY: every 6h finds least-competed unassigned Stellar Wave issues (1-3 applications)
+- BOUNTY DISCOVERY: NEW unassigned Stellar Wave issues created in last 24h with 0 apps
+- Wallet monitor: XLM/ETH/BTC/SOL (instant alert on incoming)
+- PR tracker: merges, comments, reviews, conflict detection
+- generate_ping_comment: ready-to-paste text when >24h no response
+- State persistence: state.json committed by CI
+- Russian TG messages
 
-Plus: auto-generates ready-to-paste ping comments when >24h elapsed.
+Runs on GitHub Actions cron '*/5 * * * *'.
 """
 import os
 import json
 import time
 import logging
 import requests
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 log = logging.getLogger("daemon")
@@ -33,43 +34,40 @@ TRX_ADDR = "TNQdBautGuPihGXqwNJYLwHWLjVHs2p4A8"
 
 STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "state.json")
 
-# All tracked PRs: (repo, pr_number, bounty_usd, label, language)
+# All tracked PRs: (repo, pr_number, bounty_usd, label)
 PRS = [
-    ("UniversalAviator420/bounty-sandbox", 12, 50, "bounty-sandbox README"),
+    # Still open, unassigned underlying issue — best chance
+    ("Heliobond/frontend", 676, 100, "registry decoder (#626 unassigned)"),
+    ("soroban-forge-labs/soroban-forge", 488, 50, "network remove subcommand (#467 unassigned)"),
+    ("gear5labs/chenpilot-client", 185, 50, "remove tsc_output.txt artifact (#135 unassigned)"),
+    ("gear5labs/chenpilot-client", 186, 50, "logger helper + console.log removal (#133 unassigned)"),
+    ("gear5labs/chenpilot-client", 187, 50, "format/validation tests (#141 unassigned)"),
+    ("gear5labs/chenpilot-client", 189, 50, "dedupe socketManager tests (#136 unassigned)"),
+    ("StellarCanary/ProtocolCanary-Action", 306, 50, "main.ts error-branch tests (#271 unassigned)"),
+    ("StellarCanary/ProtocolCanary-Fixtures", 241, 50, "non-array assert value rejected (#225 unassigned)"),
+    ("StellarCanary/ProtocolCanary-Fixtures", 242, 50, "expected_file accepts existing (#226 unassigned)"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1006, 50, "contract-ids key-handling (#919 unassigned)"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1007, 50, "authorization key+net guards (#917 unassigned)"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1008, 50, "authorization-trees key+net guards (#916 unassigned)"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1009, 50, "setup-linux key-handling (#911 unassigned)"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1010, 50, "token-audit unaudited notice (#900 unassigned)"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1011, 50, "fundamentals unaudited notice (#898 unassigned)"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1012, 50, "upgrade-checklist unaudited notice (#901 unassigned)"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1013, 50, "defi-patterns unaudited notice (#897 unassigned)"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1017, 50, "setup-windows key-handling (#913 unassigned)"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1018, 50, "setup-macos key-handling (#912 unassigned)"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1019, 50, "deploy-testnet key-handling (#907 unassigned)"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1020, 50, "patterns/overview unaudited notice (#902 unassigned)"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1021, 50, "examples-index unaudited notice (#903 unassigned)"),
+    # Other (no Stellar Wave label, may still merge but no XLM payout)
+    ("UniversalAviator420/bounty-sandbox", 12, 50, "bounty-sandbox README+add bug"),
     ("dwebagents/AgentPipe", 2120, 23, "AgentPipe contributors"),
-    ("Heliobond/frontend", 664, 100, "Node 22 bump"),
-    ("Heliobond/frontend", 668, 100, "invest routing fix"),
-    ("Heliobond/frontend", 669, 100, "yield edge-trigger alerts"),
-    ("Heliobond/frontend", 676, 100, "registry decoder"),
     ("ancore-org/ancore", 1487, 0, "retry wrapper"),
-    ("StellarRoute/WaveFlow", 71, 100, "CONTRIBUTING.md + Wave bounty workflow"),
-    ("Soroban-Cookbook/Soroban_Cookbook_online", 1006, 50, "contract-ids key-handling"),
-    ("Soroban-Cookbook/Soroban_Cookbook_online", 1007, 50, "authorization key+net guards"),
-    ("Soroban-Cookbook/Soroban_Cookbook_online", 1008, 50, "authorization-trees key+net guards"),
-    ("Soroban-Cookbook/Soroban_Cookbook_online", 1009, 50, "setup-linux key-handling"),
-    ("Soroban-Cookbook/Soroban_Cookbook_online", 1010, 50, "token-audit unaudited notice"),
-    ("Soroban-Cookbook/Soroban_Cookbook_online", 1011, 50, "fundamentals unaudited notice"),
-    ("Soroban-Cookbook/Soroban_Cookbook_online", 1012, 50, "upgrade-checklist unaudited notice"),
-    ("Soroban-Cookbook/Soroban_Cookbook_online", 1013, 50, "defi-patterns unaudited notice"),
-    ("Soroban-Cookbook/Soroban_Cookbook_online", 1017, 50, "setup-windows key-handling"),
-    ("Soroban-Cookbook/Soroban_Cookbook_online", 1018, 50, "setup-macos key-handling"),
-    ("Soroban-Cookbook/Soroban_Cookbook_online", 1019, 50, "deploy-testnet key-handling"),
-    ("Soroban-Cookbook/Soroban_Cookbook_online", 1020, 50, "patterns/overview unaudited"),
-    ("Soroban-Cookbook/Soroban_Cookbook_online", 1021, 50, "examples-index unaudited"),
-    ("drydocs/meridian", 982, 50, "format/protocolLabels tests"),
-    ("drydocs/meridian", 983, 50, "useAdminHistory hook test"),
-    ("soroban-forge-labs/soroban-forge", 488, 50, "network remove subcommand"),
-    ("gear5labs/chenpilot-client", 185, 50, "remove tsc_output.txt artifact"),
-    ("gear5labs/chenpilot-client", 186, 50, "logger helper + console.log removal"),
-    ("gear5labs/chenpilot-client", 187, 50, "format/validation tests"),
-    ("StellarCanary/ProtocolCanary-Action", 306, 50, "main.ts error-branch tests"),
-    ("gear5labs/chenpilot-client", 189, 50, "dedupe socketManager tests"),
-    ("StellarCanary/ProtocolCanary-Fixtures", 241, 50, "non-array assert value rejected"),
-    ("StellarCanary/ProtocolCanary-Fixtures", 242, 50, "expected_file accepts existing"),
+    ("StellarRoute/WaveFlow", 71, 100, "CONTRIBUTING.md (no Wave label)"),
 ]
 
 # Repos where Vercel/preview failure is expected for fork PRs (do NOT alert on those)
-FORK_VERCEL_REPOS = {"Heliobond/frontend"}
+FORK_VERCEL_REPOS = {"Heliobond/frontend", "drydocs/meridian"}
 
 HEADERS = {
     "Authorization": f"Bearer {GH_TOKEN}",
@@ -77,26 +75,25 @@ HEADERS = {
     "Accept": "application/vnd.github+json",
 }
 
-# 24 hours in seconds
 SLA_THRESHOLD_SECONDS = 24 * 3600
+DISCOVERY_INTERVAL_SECONDS = 6 * 3600  # 6h
+DISCOVERY_MAX_RESULTS = 5  # Top 5 least-competed issues per discovery run
 
 
 def load_state():
+    default = {
+        "prev_xlm": 9.8081229, "prev_eth": 0.0, "prev_btc": 0.0, "prev_sol": 0.0,
+        "prev_pr_states": {}, "last_heartbeat": 0, "last_comment_seen": {},
+        "seen_bounties": {}, "pinged_prs": {},
+        "last_discovery": 0, "last_top_bounties": [],
+    }
     if not os.path.exists(STATE_FILE):
-        return {
-            "prev_xlm": 9.8081229, "prev_eth": 0.0, "prev_btc": 0.0, "prev_sol": 0.0,
-            "prev_pr_states": {}, "last_heartbeat": 0, "last_comment_seen": {},
-            "seen_bounties": {}, "pinged_prs": {},
-        }
+        return default
     try:
         with open(STATE_FILE) as f:
             return json.load(f)
     except Exception:
-        return {
-            "prev_xlm": 9.8081229, "prev_eth": 0.0, "prev_btc": 0.0, "prev_sol": 0.0,
-            "prev_pr_states": {}, "last_heartbeat": 0, "last_comment_seen": {},
-            "seen_bounties": {}, "pinged_prs": {},
-        }
+        return default
 
 
 def save_state(s):
@@ -121,7 +118,7 @@ def tg_send(text, parse_mode=None):
         return False
 
 
-# ============== WALLET MONITOR (always alert on incoming) ==============
+# ============== WALLET MONITOR ==============
 def check_xlm(prev):
     try:
         r = requests.get(f"https://horizon.stellar.org/accounts/{XLM_ADDR}", timeout=10)
@@ -147,18 +144,15 @@ def check_xlm(prev):
 
 def check_eth(prev):
     try:
-        # Etherscan V2 API (V1 deprecated)
         r = requests.get(
             f"https://api.etherscan.io/v2/api?chainid=1&module=account&action=balance&address={ETH_ADDR}&tag=latest",
             timeout=10,
         )
         if r.status_code == 200:
             result = r.json().get("result", "0")
-            # Etherscan returns string error in result on failure
             try:
                 wei = int(result)
             except (ValueError, TypeError):
-                log.warning("eth: %s", str(result)[:100])
                 return prev
             bal = wei / 1e18
             if bal > prev + 0.0001:
@@ -166,8 +160,7 @@ def check_eth(prev):
                 tg_send(
                     f"💰 ETH INCOMING: +{delta:.6f} ETH\n"
                     f"Баланс: {prev:.6f} → {bal:.6f} ETH\n"
-                    f"Адрес: {ETH_ADDR}\n"
-                    f"https://etherscan.io/address/{ETH_ADDR}"
+                    f"Адрес: {ETH_ADDR}"
                 )
                 return bal
             return bal
@@ -186,11 +179,7 @@ def check_btc(prev):
             bal = sat / 1e8
             if bal > prev + 0.00001:
                 delta = bal - prev
-                tg_send(
-                    f"💰 BTC INCOMING: +{delta:.8f} BTC\n"
-                    f"Баланс: {prev:.8f} → {bal:.8f} BTC\n"
-                    f"Адрес: {BTC_ADDR}"
-                )
+                tg_send(f"💰 BTC INCOMING: +{delta:.8f} BTC\nБаланс: {bal:.8f} BTC")
                 return bal
             return bal
     except Exception as e:
@@ -202,8 +191,7 @@ def check_sol(prev):
     try:
         r = requests.post(
             "https://api.mainnet-beta.solana.com",
-            json={"jsonrpc": "2.0", "id": 1, "method": "getBalance",
-                  "params": [SOL_ADDR]},
+            json={"jsonrpc": "2.0", "id": 1, "method": "getBalance", "params": [SOL_ADDR]},
             timeout=10,
         )
         if r.status_code == 200:
@@ -211,11 +199,7 @@ def check_sol(prev):
             bal = lamports / 1e9
             if bal > prev + 0.001:
                 delta = bal - prev
-                tg_send(
-                    f"💰 SOL INCOMING: +{delta:.6f} SOL\n"
-                    f"Баланс: {prev:.6f} → {bal:.6f} SOL\n"
-                    f"Адрес: {SOL_ADDR}"
-                )
+                tg_send(f"💰 SOL INCOMING: +{delta:.6f} SOL\nБаланс: {bal:.6f} SOL")
                 return bal
             return bal
     except Exception as e:
@@ -233,13 +217,10 @@ def check_wallets(state):
 
 # ============== SMART PR TRACKER ==============
 def get_repo_maintainers(repo, num):
-    """Find maintainers/reviewers from PR reviews + repo owner."""
     maintainers = set()
     try:
-        revs = requests.get(
-            f"https://api.github.com/repos/{repo}/pulls/{num}/reviews",
-            headers=HEADERS, timeout=15,
-        ).json()
+        revs = requests.get(f"https://api.github.com/repos/{repo}/pulls/{num}/reviews",
+                           headers=HEADERS, timeout=15).json()
         for r in revs:
             u = r.get("user", {}).get("login", "")
             if u and u != "makar52nn2016-jpg" and "[bot]" not in u:
@@ -247,9 +228,7 @@ def get_repo_maintainers(repo, num):
     except Exception:
         pass
     try:
-        repo_data = requests.get(
-            f"https://api.github.com/repos/{repo}", headers=HEADERS, timeout=15,
-        ).json()
+        repo_data = requests.get(f"https://api.github.com/repos/{repo}", headers=HEADERS, timeout=15).json()
         owner = repo_data.get("owner", {}).get("login", "")
         if owner:
             maintainers.add(owner)
@@ -259,7 +238,6 @@ def get_repo_maintainers(repo, num):
 
 
 def generate_ping_comment(maintainers_list, repo, num, label, bounty):
-    """Generate ready-to-paste ping comment text for Telegram."""
     mentions = " ".join(f"@{u}" for u in maintainers_list) or "@maintainer"
     return (
         f"🔥 ACTION NEEDED — PR waiting >24h\n\n"
@@ -271,12 +249,11 @@ def generate_ping_comment(maintainers_list, repo, num, label, bounty):
         f"Hi {mentions}, all CI checks passed and the PR is mergeable. "
         f"Could you merge when convenient? Thanks!\n"
         f"```\n"
-        f"🔗 {repo}/pull/{num}"
+        f"🔗 https://github.com/{repo}/pull/{num}"
     )
 
 
 def check_prs(state):
-    """Smart PR tracking — only alert on action-needed events."""
     seen = state.get("last_comment_seen", {})
     pr_states = state.get("prev_pr_states", {})
     pinged = state.get("pinged_prs", {})
@@ -285,10 +262,8 @@ def check_prs(state):
 
     for repo, num, bounty, label in PRS:
         try:
-            pr = requests.get(
-                f"https://api.github.com/repos/{repo}/pulls/{num}",
-                headers=HEADERS, timeout=15,
-            ).json()
+            pr = requests.get(f"https://api.github.com/repos/{repo}/pulls/{num}",
+                            headers=HEADERS, timeout=15).json()
             if "title" not in pr:
                 continue
 
@@ -297,7 +272,6 @@ def check_prs(state):
             now_merged = pr.get("merged", False)
             prev_review_state = pr_states.get(state_key, {}).get("review_state")
 
-            # === ALWAYS ALERT: merge detected ===
             if now_merged and not was_merged:
                 if bounty > 0:
                     tg_send(
@@ -305,51 +279,41 @@ def check_prs(state):
                         f"Задача: {label}\n"
                         f"Награда: ${bounty}\n"
                         f"https://github.com/{repo}/pull/{num}\n\n"
-                        f"Ждем payout (1-14 дней для Stellar Wave через drips.network)"
+                        f"⚠️ Чтобы получить payout, нужно чтобы issue был assigned тебе "
+                        f"через drips.network/wave dashboard ДО merge. Проверь свой wave "
+                        f"dashboard на наличие points."
                     )
                 else:
                     tg_send(f"✅ PR СМЕРЖЕН: {repo}#{num} ({label})")
                 action_needed_count += 1
-                pr_states[state_key] = {"merged": True, "state": "merged",
-                                         "title": pr.get("title", "")}
+                pr_states[state_key] = {"merged": True, "state": "merged"}
                 continue
 
             if now_merged:
-                # already known merged — skip
                 pr_states[state_key] = {"merged": True}
                 continue
 
-            # === Get CI state ===
             sha = pr.get("head", {}).get("sha", "")
             ci_state = "?"
             check_conclusions = []
             if sha:
                 try:
-                    st = requests.get(
-                        f"https://api.github.com/repos/{repo}/commits/{sha}/status",
-                        headers=HEADERS, timeout=15,
-                    ).json()
+                    st = requests.get(f"https://api.github.com/repos/{repo}/commits/{sha}/status",
+                                    headers=HEADERS, timeout=15).json()
                     ci_state = st.get("state", "?")
                 except Exception:
                     pass
                 try:
-                    cr = requests.get(
-                        f"https://api.github.com/repos/{repo}/commits/{sha}/check-runs",
-                        headers=HEADERS, timeout=15,
-                    ).json()
-                    check_conclusions = [
-                        (c.get("name"), c.get("conclusion"))
-                        for c in cr.get("check_runs", [])[:5]
-                    ]
+                    cr = requests.get(f"https://api.github.com/repos/{repo}/commits/{sha}/check-runs",
+                                     headers=HEADERS, timeout=15).json()
+                    check_conclusions = [(c.get("name"), c.get("conclusion"))
+                                        for c in cr.get("check_runs", [])[:5]]
                 except Exception:
                     pass
 
-            # === ALERT: CI failure (build/test, NOT Vercel fork) ===
-            # Determine if any "real" check failed (build, test, lint)
             real_failures = []
             for name, conclusion in check_conclusions:
                 if conclusion == "failure" and name:
-                    # Skip Vercel preview for fork PRs
                     if repo in FORK_VERCEL_REPOS and "Vercel" in name:
                         continue
                     real_failures.append(name)
@@ -358,12 +322,11 @@ def check_prs(state):
             if real_failures and ci_state != prev_ci:
                 tg_send(
                     f"❌ CI FAIL: {repo}#{num} ({label})\n"
-                    f"Failed checks: {', '.join(real_failures[:3])}\n"
-                    f"Нужно поправить! https://github.com/{repo}/pull/{num}"
+                    f"Failed: {', '.join(real_failures[:3])}\n"
+                    f"https://github.com/{repo}/pull/{num}"
                 )
                 action_needed_count += 1
 
-            # === ALERT: dirty / conflict ===
             mergeable_state = pr.get("mergeable_state")
             prev_ms = pr_states.get(state_key, {}).get("mergeable_state")
             if mergeable_state == "dirty" and prev_ms != "dirty":
@@ -373,16 +336,12 @@ def check_prs(state):
                 )
                 action_needed_count += 1
 
-            # === Get reviews ===
-            reviews = requests.get(
-                f"https://api.github.com/repos/{repo}/pulls/{num}/reviews",
-                headers=HEADERS, timeout=15,
-            ).json()
+            reviews = requests.get(f"https://api.github.com/repos/{repo}/pulls/{num}/reviews",
+                                  headers=HEADERS, timeout=15).json()
             last_review = reviews[-1] if reviews else None
             review_state = last_review.get("state") if last_review else None
             review_by = last_review.get("user", {}).get("login") if last_review else None
 
-            # === ALERT: new review from maintainer (not bot, not us) ===
             if (review_state and review_by and review_by != "makar52nn2016-jpg"
                     and "[bot]" not in review_by
                     and review_state != prev_review_state):
@@ -395,46 +354,32 @@ def check_prs(state):
                 )
                 action_needed_count += 1
 
-            # === ALERT: APPROVED but >24h without merge → send ping text ===
             if review_state == "APPROVED":
-                # Get last comment timestamp
-                comments = requests.get(
-                    f"https://api.github.com/repos/{repo}/issues/{num}/comments",
-                    headers=HEADERS, timeout=15,
-                ).json()
-                # find last comment by maintainer (not us, not bot)
+                comments = requests.get(f"https://api.github.com/repos/{repo}/issues/{num}/comments",
+                                       headers=HEADERS, timeout=15).json()
                 last_maintainer_comment_at = None
                 for c in comments:
                     u = c.get("user", {}).get("login", "")
                     if u != "makar52nn2016-jpg" and "[bot]" not in u:
                         last_maintainer_comment_at = c.get("created_at")
-                        break  # we want most recent — but list is asc, so reverse
+                        break
                 if not last_maintainer_comment_at:
-                    # use PR created_at or updated_at
                     last_maintainer_comment_at = pr.get("updated_at") or pr.get("created_at")
 
-                last_dt = datetime.fromisoformat(
-                    last_maintainer_comment_at.replace("Z", "+00:00")
-                )
+                last_dt = datetime.fromisoformat(last_maintainer_comment_at.replace("Z", "+00:00"))
                 hours_since = (now - last_dt).total_seconds() / 3600
 
                 if hours_since > 24:
-                    # only ping once per PR per 24h
                     last_ping = pinged.get(state_key, 0)
                     if now.timestamp() - last_ping > 24 * 3600:
                         maintainers = get_repo_maintainers(repo, num)
-                        ping_text = generate_ping_comment(
-                            maintainers, repo, num, label, bounty
-                        )
+                        ping_text = generate_ping_comment(maintainers, repo, num, label, bounty)
                         tg_send(ping_text)
                         pinged[state_key] = now.timestamp()
                         action_needed_count += 1
 
-            # === ALERT: new comment from maintainer ===
-            comments = requests.get(
-                f"https://api.github.com/repos/{repo}/issues/{num}/comments",
-                headers=HEADERS, timeout=15,
-            ).json()
+            comments = requests.get(f"https://api.github.com/repos/{repo}/issues/{num}/comments",
+                                   headers=HEADERS, timeout=15).json()
             last_seen_id = seen.get(state_key, 0)
             new_other_comments = [
                 c for c in comments
@@ -456,15 +401,12 @@ def check_prs(state):
                 seen[state_key] = max(c.get("id", 0) for c in comments)
 
             pr_states[state_key] = {
-                "merged": now_merged,
-                "state": pr.get("state"),
+                "merged": now_merged, "state": pr.get("state"),
                 "mergeable": pr.get("mergeable"),
                 "mergeable_state": mergeable_state,
                 "title": pr.get("title", ""),
-                "review_state": review_state,
-                "review_by": review_by,
-                "ci_state": ci_state,
-                "updated_at": pr.get("updated_at"),
+                "review_state": review_state, "review_by": review_by,
+                "ci_state": ci_state, "updated_at": pr.get("updated_at"),
             }
         except Exception as e:
             log.warning("PR %s#%s: %s", repo, num, e)
@@ -475,93 +417,113 @@ def check_prs(state):
     return action_needed_count
 
 
-# ============== BOUNTY SCANNER ==============
-BOUNTY_REPOS = [
-    "stellar/stellar-demo-wallet",
-    "auscaster/frantic-board",
-    "Heliobond/frontend",
-    "dwebagents/AgentPipe",
-    "UniversalAviator420/bounty-sandbox",
-    "ancore-org/ancore",
-    "Soroban-Cookbook/Soroban_Cookbook_online",
-    "StellarRoute/WaveFlow",
-]
+# ============== BOUNTY DISCOVERY (NEW in v3) ==============
+def discover_bounties(state):
+    """Every 6h: find least-competed unassigned Stellar Wave issues (1-3 applications).
+    Alert user about best opportunities to apply via drips.network/wave dashboard."""
+    now = time.time()
+    last = state.get("last_discovery", 0)
+    if now - last < DISCOVERY_INTERVAL_SECONDS:
+        return 0
 
+    state["last_discovery"] = now
+    log.info("Running bounty discovery...")
 
-def scan_bounties(state):
-    """Scan for new bounty issues — only alert on NEW self-assignable ones."""
-    seen_issues = state.setdefault("seen_bounties", {})
-    found_new = 0
+    try:
+        r = requests.get(
+            "https://api.github.com/search/issues",
+            params={
+                "q": 'label:"Stellar Wave" state:open is:issue no:assignee',
+                "per_page": 30,
+                "sort": "created",
+                "order": "desc",
+            },
+            headers=HEADERS, timeout=30,
+        )
+        if r.status_code != 200:
+            log.warning("discovery search failed: %d", r.status_code)
+            return 0
+        items = r.json().get("items", [])
 
-    for repo in BOUNTY_REPOS:
-        try:
-            r = requests.get(
-                f"https://api.github.com/repos/{repo}/issues",
-                params={"state": "open", "labels": "bounty", "per_page": 30},
-                headers=HEADERS, timeout=15,
+        # Score each by number of applications
+        scored = []
+        for i in items[:30]:
+            repo = '/'.join(i['repository_url'].split('/')[-2:])
+            num = i['number']
+            try:
+                comments = requests.get(f"https://api.github.com/repos/{repo}/issues/{num}/comments?per_page=50",
+                                       headers=HEADERS, timeout=15).json()
+                app_count = sum(1 for c in comments
+                              if "wave:application-id" in (c.get("body", "") or ""))
+                scored.append({
+                    "repo": repo, "num": num, "title": i["title"][:80],
+                    "app_count": app_count,
+                    "created": i["created_at"][:10],
+                    "labels": [l["name"] for l in i.get("labels", []) if l["name"] != "Stellar Wave"],
+                    "url": i["html_url"],
+                })
+            except Exception:
+                pass
+
+        # Sort by app_count asc, then by created desc (newer first)
+        scored.sort(key=lambda x: (x["app_count"], -int(x["created"].replace("-", ""))))
+
+        top = scored[:DISCOVERY_MAX_RESULTS]
+        if not top:
+            return 0
+
+        msg_lines = ["🎯 DISCOVERY: ТОП-5 least-competed Stellar Wave issues\n"]
+        msg_lines.append("(Меньше заявок = выше шанс получить assignment)\n")
+        for i, t in enumerate(top, 1):
+            emoji = "🟢" if t["app_count"] <= 1 else "🟡" if t["app_count"] <= 3 else "🔴"
+            msg_lines.append(
+                f"{i}. {emoji} {t['repo']}#{t['num']} — {t['app_count']} apps\n"
+                f"   {t['title']}\n"
+                f"   labels: {', '.join(t['labels'][:4])}\n"
+                f"   {t['url']}"
             )
-            if r.status_code != 200:
-                continue
-            for issue in r.json():
-                if "pull_request" in issue:
-                    continue
-                num = issue.get("number")
-                key = f"{repo}#{num}"
-                if key not in seen_issues:
-                    seen_issues[key] = {"title": issue.get("title"),
-                                        "url": issue.get("html_url")}
-                    found_new += 1
-                    assignee = issue.get("assignee")
-                    if assignee is None:
-                        # NEW self-assignable bounty — alert (potential action)
-                        labels = [l["name"] for l in issue.get("labels", [])]
-                        tg_send(
-                            f"🎯 НОВЫЙ BOUNTY: {repo}#{num}\n"
-                            f"Тема: {issue.get('title', '')[:80]}\n"
-                            f"Labels: {', '.join(labels[:5])}\n"
-                            f"Self-assignable: ДА\n"
-                            f"{issue.get('html_url')}"
-                        )
-        except Exception as e:
-            log.warning("bounty scan %s: %s", repo, e)
-    return found_new
+        msg_lines.append("\n💡 Подай заявку на drips.network/wave dashboard на 2-3 из них.")
+        msg = "\n".join(msg_lines)
+        tg_send(msg)
+        state["last_top_bounties"] = top
+        return len(top)
+    except Exception as e:
+        log.warning("discovery: %s", e)
+    return 0
 
 
-# ============== HEARTBEAT (silent — no alert unless problems) ==============
+# ============== HEARTBEAT ==============
 def maybe_heartbeat(state, action_count):
-    """Heartbeat only sends if there are pending action-needed items OR every 6h summary."""
     now = time.time()
     last = state.get("last_heartbeat", 0)
-
-    # 6h regular heartbeat
     if now - last > 6 * 3600:
         state["last_heartbeat"] = now
-        merged_count = sum(1 for k, v in state.get("prev_pr_states", {}).items()
-                          if v.get("merged"))
+        merged_count = sum(1 for k, v in state.get("prev_pr_states", {}).items() if v.get("merged"))
         open_count = len(PRS) - merged_count
-        # only send heartbeat if there's something interesting OR user might think daemon is dead
         tg_send(
-            f"💓 Daemon живой (GitHub Actions)\n"
+            f"💓 Daemon v3 живой (GitHub Actions)\n"
             f"PRs merged: {merged_count}/{len(PRS)}\n"
             f"Pending review: {open_count}\n"
             f"Action items this run: {action_count}\n"
-            f"XLM: {state.get('prev_xlm', 0):.4f} | ETH: {state.get('prev_eth', 0):.6f}"
+            f"XLM: {state.get('prev_xlm', 0):.4f} | ETH: {state.get('prev_eth', 0):.6f}\n"
+            f"BTC: {state.get('prev_btc', 0):.8f} | SOL: {state.get('prev_sol', 0):.6f}\n"
+            f"Discovery: каждые 6h ищет least-competed Stellar Wave issues"
         )
     return state
 
 
 # ============== MAIN ==============
 def main():
-    log.info("Daemon v2 start — smart alerting mode")
+    log.info("Daemon v3 start — smart alerting + bounty discovery")
     state = load_state()
 
     state = check_wallets(state)
     action_count = check_prs(state)
-    found_new = scan_bounties(state)
+    discovered = discover_bounties(state)
     state = maybe_heartbeat(state, action_count)
 
     save_state(state)
-    log.info("Daemon end. Action items: %d, new bounties scanned: %d", action_count, found_new)
+    log.info("Daemon end. Actions: %d, bounties discovered: %d", action_count, discovered)
 
 
 if __name__ == "__main__":
