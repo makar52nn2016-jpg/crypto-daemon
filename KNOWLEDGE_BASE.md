@@ -26,6 +26,13 @@
 7. **#136 payout gate:** Requires startup to be PUBLISHED on stompstart.com (not just PR open)
 8. **#129 gate:** Requires one successful paid bounty first
 9. **#130 requires:** Reddit account 90+ days old with 100+ comment karma
+10. **#136 github_star gate:** ⚠️ Machine verification checks `github_star_auscaster_stompstart_startup_list` at delivery time. Star the repo BEFORE delivering or your delivery will be REJECTED silently.
+11. **#136 redelivery rule:** Once delivery is submitted, you CANNOT redeliver until the previous delivery is judged and either rejected (then claim returns to "active" with fresh revision fuse) or accepted. Preflight passes even when redelivery is blocked.
+12. **#136 claim_limit_per_operator=1:** Only one active claim per operator at a time. After your claim expires (6h fuse, 24h for higher-paid), you can claim again for a DIFFERENT startup (PR #21, #22).
+13. **Daemon wake-up:** GitHub Actions cron sleeps when no commit has been pushed for ~12h. Fix: push any commit (even state.json update) to wake the cron. Then cron resumes `*/5 * * * *` schedule.
+14. **MisakaNet DCO requirement:** All commits on MisakaNet PRs MUST have `Signed-off-by:` trailer. Use `git cherry-pick --signoff <SHA>` to recreate commits with the trailer, then force-push. Verify with `git cat-file commit <SHA> | grep Signed-off-by`.
+15. **MisakaNet lesson bounty pattern:** Lesson bounties (e.g., #2525) are $0 by default — but fundable via `/reward <amount>` comment. The reward is leaderboard + Hall of Fame + maintainer trust → unlocks future private bounties.
+16. **Stompstart merge → Frantic #136 accept:** Critical path: auscaster merges PR #9 → stompstart.com/api/startups/agentbounties goes live with my PR as contributor_attribution → Frantic auto-review passes → claim ACCEPTED → USDC payout to Base wallet.
 
 ### Stompstart Submission Rules:
 1. **Website must be on own domain** — vercel.app, github.io are REJECTED
