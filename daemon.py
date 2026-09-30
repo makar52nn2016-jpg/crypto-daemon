@@ -40,6 +40,7 @@ PRS = [
     ("Heliobond/frontend", 669, 100, "yield edge-trigger alerts"),
     ("Heliobond/frontend", 676, 100, "registry decoder"),
     ("ancore-org/ancore", 1487, 0, "retry wrapper"),
+    ("StellarRoute/WaveFlow", 71, 100, "CONTRIBUTING.md + Wave bounty workflow"),
 ]
 
 HEADERS = {
