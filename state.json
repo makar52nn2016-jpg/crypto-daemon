@@ -1,0 +1,277 @@
+{
+  "prev_xlm": 9.8081229,
+  "prev_eth": 0.0,
+  "prev_btc": 0.0,
+  "prev_sol": 0.0,
+  "prev_pr_states": {
+    "UniversalAviator420/bounty-sandbox#12": {
+      "merged": false,
+      "state": "open",
+      "mergeable": true,
+      "mergeable_state": "clean",
+      "title": "fix(#1, #3, #5): README Status section + greet(None) safe + add() returns a+b",
+      "review_state": null,
+      "review_by": null,
+      "ci_state": "pending",
+      "updated_at": "2026-09-29T22:26:55Z"
+    },
+    "dwebagents/AgentPipe#2120": {
+      "merged": false,
+      "state": "open",
+      "mergeable": true,
+      "mergeable_state": "clean",
+      "title": "feat(docs): contributors webpage with goose-people portraits (#1580)",
+      "review_state": "DISMISSED",
+      "review_by": "agentpipe-clerk[bot]",
+      "ci_state": "pending",
+      "updated_at": "2026-09-29T22:26:56Z"
+    },
+    "Heliobond/frontend#664": {
+      "merged": false,
+      "state": "open",
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "title": "chore: bump Node minimum to 22 (Next 16 requires >=20.9) \u2014 #652",
+      "review_state": "APPROVED",
+      "review_by": "sshdopey",
+      "ci_state": "failure",
+      "updated_at": "2026-09-30T04:02:43Z"
+    },
+    "Heliobond/frontend#668": {
+      "merged": false,
+      "state": "open",
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "title": "fix: Project detail Invest routing \u2014 /deposit?project=<id> (#641)",
+      "review_state": "APPROVED",
+      "review_by": "sshdopey",
+      "ci_state": "failure",
+      "updated_at": "2026-09-30T04:14:00Z"
+    },
+    "Heliobond/frontend#669": {
+      "merged": false,
+      "state": "open",
+      "mergeable": null,
+      "mergeable_state": "unknown",
+      "title": "fix: edge-triggered yield alerts + translated toast keys (#638)",
+      "review_state": "APPROVED",
+      "review_by": "sshdopey",
+      "ci_state": "failure",
+      "updated_at": "2026-09-30T04:02:46Z"
+    },
+    "Heliobond/frontend#676": {
+      "merged": false,
+      "state": "open",
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "title": "fix: registry decoder matches ProjectRegistry contract fields (#626)",
+      "review_state": "APPROVED",
+      "review_by": "sshdopey",
+      "ci_state": "failure",
+      "updated_at": "2026-09-30T04:11:29Z"
+    },
+    "ancore-org/ancore#1487": {
+      "merged": false,
+      "state": "open",
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "title": "feat(sdk): retry policy wrapper for AncoreClient (#1478)",
+      "review_state": null,
+      "review_by": null,
+      "ci_state": "success",
+      "updated_at": "2026-09-29T22:27:04Z"
+    },
+    "StellarRoute/WaveFlow#71": {
+      "merged": false,
+      "state": "open",
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "title": "[documentation] Add CONTRIBUTING.md with Wave bounty label workflow",
+      "review_state": null,
+      "review_by": null,
+      "ci_state": "pending",
+      "updated_at": "2026-09-30T04:01:41Z"
+    },
+    "Soroban-Cookbook/Soroban_Cookbook_online#1006": {
+      "merged": false,
+      "state": "open",
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "title": "Add key-handling guard for concepts/contract-ids.md",
+      "review_state": null,
+      "review_by": null,
+      "ci_state": "pending",
+      "updated_at": "2026-09-30T04:23:36Z"
+    },
+    "Soroban-Cookbook/Soroban_Cookbook_online#1007": {
+      "merged": false,
+      "state": "open",
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "title": "Add key-handling + network-risk guards for concepts/authorization.md",
+      "review_state": null,
+      "review_by": null,
+      "ci_state": "pending",
+      "updated_at": "2026-09-30T04:23:37Z"
+    },
+    "Soroban-Cookbook/Soroban_Cookbook_online#1008": {
+      "merged": false,
+      "state": "open",
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "title": "Add key-handling + network-risk guards for concepts/authorization-trees.md",
+      "review_state": null,
+      "review_by": null,
+      "ci_state": "pending",
+      "updated_at": "2026-09-30T04:23:38Z"
+    },
+    "Soroban-Cookbook/Soroban_Cookbook_online#1009": {
+      "merged": false,
+      "state": "open",
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "title": "Add key-handling guard for getting-started/setup-linux.md",
+      "review_state": null,
+      "review_by": null,
+      "ci_state": "pending",
+      "updated_at": "2026-09-30T04:23:39Z"
+    },
+    "Soroban-Cookbook/Soroban_Cookbook_online#1010": {
+      "merged": false,
+      "state": "open",
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "title": "Add unaudited-example notice to security/token-audit.md",
+      "review_state": null,
+      "review_by": null,
+      "ci_state": "pending",
+      "updated_at": "2026-09-30T04:23:40Z"
+    },
+    "Soroban-Cookbook/Soroban_Cookbook_online#1011": {
+      "merged": false,
+      "state": "open",
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "title": "Add unaudited-example notice to security/fundamentals.md",
+      "review_state": null,
+      "review_by": null,
+      "ci_state": "pending",
+      "updated_at": "2026-09-30T04:23:41Z"
+    },
+    "Soroban-Cookbook/Soroban_Cookbook_online#1012": {
+      "merged": false,
+      "state": "open",
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "title": "Add unaudited-example notice to security/upgrade-checklist.md",
+      "review_state": null,
+      "review_by": null,
+      "ci_state": "pending",
+      "updated_at": "2026-09-30T04:23:42Z"
+    },
+    "Soroban-Cookbook/Soroban_Cookbook_online#1013": {
+      "merged": false,
+      "state": "open",
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "title": "Add unaudited-example notice to security/defi-patterns.md",
+      "review_state": null,
+      "review_by": null,
+      "ci_state": "pending",
+      "updated_at": "2026-09-30T04:23:43Z"
+    }
+  },
+  "last_comment_seen": {
+    "UniversalAviator420/bounty-sandbox#12": 5900284150,
+    "dwebagents/AgentPipe#2120": 5900284435,
+    "Heliobond/frontend#664": 5903794862,
+    "Heliobond/frontend#668": 5903901570,
+    "Heliobond/frontend#669": 5903795253,
+    "Heliobond/frontend#676": 5903875522,
+    "ancore-org/ancore#1487": 5900286023,
+    "Soroban-Cookbook/Soroban_Cookbook_online#1006": 5903998909,
+    "Soroban-Cookbook/Soroban_Cookbook_online#1007": 5903999093,
+    "Soroban-Cookbook/Soroban_Cookbook_online#1008": 5903999240,
+    "Soroban-Cookbook/Soroban_Cookbook_online#1009": 5903999400,
+    "Soroban-Cookbook/Soroban_Cookbook_online#1010": 5903999563,
+    "Soroban-Cookbook/Soroban_Cookbook_online#1011": 5903999731,
+    "Soroban-Cookbook/Soroban_Cookbook_online#1012": 5903999875,
+    "Soroban-Cookbook/Soroban_Cookbook_online#1013": 5904000036
+  },
+  "last_heartbeat": 1790742590.0904741,
+  "seen_bounties": {
+    "auscaster/frantic-board#432": {
+      "title": "Frantic bounty #135: Run an Ausca Agent Inbox end to end and report the process",
+      "url": "https://github.com/auscaster/frantic-board/issues/432"
+    },
+    "auscaster/frantic-board#431": {
+      "title": "Frantic bounty #134: Run an Ausca Browser Session end to end and report the process",
+      "url": "https://github.com/auscaster/frantic-board/issues/431"
+    },
+    "auscaster/frantic-board#430": {
+      "title": "Frantic bounty #133: Run Ausca Media Transcription end to end and report the process",
+      "url": "https://github.com/auscaster/frantic-board/issues/430"
+    },
+    "auscaster/frantic-board#429": {
+      "title": "Frantic bounty #132: Run Ausca Document Analysis end to end and report the process",
+      "url": "https://github.com/auscaster/frantic-board/issues/429"
+    },
+    "auscaster/frantic-board#330": {
+      "title": "Frantic bounty #120: Add a valuable startup offer to Sourcey",
+      "url": "https://github.com/auscaster/frantic-board/issues/330"
+    },
+    "auscaster/frantic-board#277": {
+      "title": "Frantic bounty #97: Your first bounty is on the house ($10 back when it clears, first five)",
+      "url": "https://github.com/auscaster/frantic-board/issues/277"
+    },
+    "auscaster/frantic-board#198": {
+      "title": "Frantic bounty #83: runx skill: postmortem maker",
+      "url": "https://github.com/auscaster/frantic-board/issues/198"
+    },
+    "auscaster/frantic-board#194": {
+      "title": "Frantic bounty #79: runx skill: CRM cleanup",
+      "url": "https://github.com/auscaster/frantic-board/issues/194"
+    },
+    "auscaster/frantic-board#106": {
+      "title": "Frantic bounty #49: Give runx some love",
+      "url": "https://github.com/auscaster/frantic-board/issues/106"
+    },
+    "auscaster/frantic-board#53": {
+      "title": "Frantic bounty #33: Publish Sourcey docs for a maintained OSS library",
+      "url": "https://github.com/auscaster/frantic-board/issues/53"
+    },
+    "dwebagents/AgentPipe#1928": {
+      "title": "vogon poetry",
+      "url": "https://github.com/dwebagents/AgentPipe/issues/1928"
+    },
+    "dwebagents/AgentPipe#1663": {
+      "title": "[bounty: 74000 ETH] start building company town for contributing agents",
+      "url": "https://github.com/dwebagents/AgentPipe/issues/1663"
+    },
+    "dwebagents/AgentPipe#1580": {
+      "title": "[Bounty: 23 USDC] Create contributors webpage",
+      "url": "https://github.com/dwebagents/AgentPipe/issues/1580"
+    },
+    "dwebagents/AgentPipe#131": {
+      "title": "[Bounty: 3 ETH] implement Goose class in SuperCollider",
+      "url": "https://github.com/dwebagents/AgentPipe/issues/131"
+    },
+    "dwebagents/AgentPipe#107": {
+      "title": "[Bounty: 4 Golden Eggs] Implement golden egg factory inside goose",
+      "url": "https://github.com/dwebagents/AgentPipe/issues/107"
+    },
+    "dwebagents/AgentPipe#95": {
+      "title": "[13.12 BTC BOUNTY] implement zero-latency continuous time banana puddingital signal processing library",
+      "url": "https://github.com/dwebagents/AgentPipe/issues/95"
+    },
+    "UniversalAviator420/bounty-sandbox#5": {
+      "title": "Bug: add() subtracts instead of adding",
+      "url": "https://github.com/UniversalAviator420/bounty-sandbox/issues/5"
+    },
+    "UniversalAviator420/bounty-sandbox#3": {
+      "title": "Bug: greet() crashes with AttributeError when name is None",
+      "url": "https://github.com/UniversalAviator420/bounty-sandbox/issues/3"
+    }
+  },
+  "pinged_prs": {}
+}

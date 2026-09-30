@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
-"""Crypto Daemon — 24/7 autonomous earning system (GitHub Actions edition).
+"""Crypto Daemon v2 — 24/7 autonomous earning system (GitHub Actions edition).
 
-Runs on a cron schedule every 5 minutes. Each invocation:
-  - Checks XLM/ETH/BTC/SOL wallet balances → alerts on incoming funds (RU).
-  - Polls open PRs for merges, new comments, review changes → alerts in RU.
-  - Scans for new bounties across multiple repos.
-  - Posts a heartbeat to TG every 6 hours so the user knows the daemon is alive.
+Smart alerting policy: ONLY alerts when human action is required.
+- ✅ Alert: PR approved but not merged after 24h → send ready-to-copy ping text
+- ✅ Alert: PR CI failed (build/test, not fork-Vercel)
+- ✅ Alert: PR conflict/dirty (needs rebase)
+- ✅ Alert: Wallet incoming funds
+- ✅ Alert: PR merged (success!)
+- ✅ Alert: New maintainer comment requiring reply
+- 🤫 Silent: routine state changes, no-op events
 
-Designed to be stateless across invocations: writes state to ./state.json which is
-committed by the GitHub Action after each run.
+Plus: auto-generates ready-to-paste ping comments when >24h elapsed.
 """
 import os
 import json
 import time
 import logging
 import requests
+from datetime import datetime, timezone
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 log = logging.getLogger("daemon")
@@ -30,12 +33,11 @@ TRX_ADDR = "TNQdBautGuPihGXqwNJYLwHWLjVHs2p4A8"
 
 STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "state.json")
 
-# All tracked PRs: (repo, pr_number, bounty_usd, label)
+# All tracked PRs: (repo, pr_number, bounty_usd, label, language)
 PRS = [
     ("UniversalAviator420/bounty-sandbox", 12, 50, "bounty-sandbox README"),
     ("dwebagents/AgentPipe", 2120, 23, "AgentPipe contributors"),
     ("Heliobond/frontend", 664, 100, "Node 22 bump"),
-    ("Heliobond/frontend", 665, 100, "stellar.expert URLs"),
     ("Heliobond/frontend", 668, 100, "invest routing fix"),
     ("Heliobond/frontend", 669, 100, "yield edge-trigger alerts"),
     ("Heliobond/frontend", 676, 100, "registry decoder"),
@@ -51,11 +53,17 @@ PRS = [
     ("Soroban-Cookbook/Soroban_Cookbook_online", 1013, 50, "defi-patterns unaudited notice"),
 ]
 
+# Repos where Vercel/preview failure is expected for fork PRs (do NOT alert on those)
+FORK_VERCEL_REPOS = {"Heliobond/frontend"}
+
 HEADERS = {
     "Authorization": f"Bearer {GH_TOKEN}",
     "User-Agent": "crypto-daemon-bot",
     "Accept": "application/vnd.github+json",
 }
+
+# 24 hours in seconds
+SLA_THRESHOLD_SECONDS = 24 * 3600
 
 
 def load_state():
@@ -63,7 +71,7 @@ def load_state():
         return {
             "prev_xlm": 9.8081229, "prev_eth": 0.0, "prev_btc": 0.0, "prev_sol": 0.0,
             "prev_pr_states": {}, "last_heartbeat": 0, "last_comment_seen": {},
-            "seen_bounties": {},
+            "seen_bounties": {}, "pinged_prs": {},
         }
     try:
         with open(STATE_FILE) as f:
@@ -72,7 +80,7 @@ def load_state():
         return {
             "prev_xlm": 9.8081229, "prev_eth": 0.0, "prev_btc": 0.0, "prev_sol": 0.0,
             "prev_pr_states": {}, "last_heartbeat": 0, "last_comment_seen": {},
-            "seen_bounties": {},
+            "seen_bounties": {}, "pinged_prs": {},
         }
 
 
@@ -98,7 +106,7 @@ def tg_send(text, parse_mode=None):
         return False
 
 
-# ============== WALLET MONITOR ==============
+# ============== WALLET MONITOR (always alert on incoming) ==============
 def check_xlm(prev):
     try:
         r = requests.get(f"https://horizon.stellar.org/accounts/{XLM_ADDR}", timeout=10)
@@ -124,12 +132,19 @@ def check_xlm(prev):
 
 def check_eth(prev):
     try:
+        # Etherscan V2 API (V1 deprecated)
         r = requests.get(
-            f"https://api.etherscan.io/api?module=account&action=balance&address={ETH_ADDR}&tag=latest",
+            f"https://api.etherscan.io/v2/api?chainid=1&module=account&action=balance&address={ETH_ADDR}&tag=latest",
             timeout=10,
         )
         if r.status_code == 200:
-            wei = int(r.json().get("result", "0") or "0")
+            result = r.json().get("result", "0")
+            # Etherscan returns string error in result on failure
+            try:
+                wei = int(result)
+            except (ValueError, TypeError):
+                log.warning("eth: %s", str(result)[:100])
+                return prev
             bal = wei / 1e18
             if bal > prev + 0.0001:
                 delta = bal - prev
@@ -201,11 +216,57 @@ def check_wallets(state):
     return state
 
 
-# ============== PR TRACKER ==============
+# ============== SMART PR TRACKER ==============
+def get_repo_maintainers(repo, num):
+    """Find maintainers/reviewers from PR reviews + repo owner."""
+    maintainers = set()
+    try:
+        revs = requests.get(
+            f"https://api.github.com/repos/{repo}/pulls/{num}/reviews",
+            headers=HEADERS, timeout=15,
+        ).json()
+        for r in revs:
+            u = r.get("user", {}).get("login", "")
+            if u and u != "makar52nn2016-jpg" and "[bot]" not in u:
+                maintainers.add(u)
+    except Exception:
+        pass
+    try:
+        repo_data = requests.get(
+            f"https://api.github.com/repos/{repo}", headers=HEADERS, timeout=15,
+        ).json()
+        owner = repo_data.get("owner", {}).get("login", "")
+        if owner:
+            maintainers.add(owner)
+    except Exception:
+        pass
+    return list(maintainers)
+
+
+def generate_ping_comment(maintainers_list, repo, num, label, bounty):
+    """Generate ready-to-paste ping comment text for Telegram."""
+    mentions = " ".join(f"@{u}" for u in maintainers_list) or "@maintainer"
+    return (
+        f"🔥 ACTION NEEDED — PR waiting >24h\n\n"
+        f"📋 {repo}#{num} — {label}\n"
+        f"Bounty: ${bounty}\n"
+        f"Status: APPROVED, mergeable, but not merged for >24h\n\n"
+        f"📝 Готовый комментарий (copy-paste):\n"
+        f"```\n"
+        f"Hi {mentions}, all CI checks passed and the PR is mergeable. "
+        f"Could you merge when convenient? Thanks!\n"
+        f"```\n"
+        f"🔗 {repo}/pull/{num}"
+    )
+
+
 def check_prs(state):
+    """Smart PR tracking — only alert on action-needed events."""
     seen = state.get("last_comment_seen", {})
     pr_states = state.get("prev_pr_states", {})
-    total_potential = 0
+    pinged = state.get("pinged_prs", {})
+    now = datetime.now(timezone.utc)
+    action_needed_count = 0
 
     for repo, num, bounty, label in PRS:
         try:
@@ -214,14 +275,14 @@ def check_prs(state):
                 headers=HEADERS, timeout=15,
             ).json()
             if "title" not in pr:
-                log.warning("PR fetch failed %s#%s: %s", repo, num, pr)
                 continue
 
             state_key = f"{repo}#{num}"
             was_merged = pr_states.get(state_key, {}).get("merged", False)
             now_merged = pr.get("merged", False)
+            prev_review_state = pr_states.get(state_key, {}).get("review_state")
 
-            # 1) MERGE DETECTED → celebrate
+            # === ALWAYS ALERT: merge detected ===
             if now_merged and not was_merged:
                 if bounty > 0:
                     tg_send(
@@ -232,56 +293,62 @@ def check_prs(state):
                         f"Ждем payout (1-14 дней для Stellar Wave через drips.network)"
                     )
                 else:
-                    tg_send(
-                        f"✅ PR СМЕРЖЕН: {repo}#{num} ({label})\n"
-                        f"https://github.com/{repo}/pull/{num}"
-                    )
+                    tg_send(f"✅ PR СМЕРЖЕН: {repo}#{num} ({label})")
+                action_needed_count += 1
+                pr_states[state_key] = {"merged": True, "state": "merged",
+                                         "title": pr.get("title", "")}
+                continue
 
-            if not now_merged:
-                total_potential += bounty
+            if now_merged:
+                # already known merged — skip
+                pr_states[state_key] = {"merged": True}
+                continue
 
-            # 2) NEW COMMENTS
-            comments = requests.get(
-                f"https://api.github.com/repos/{repo}/issues/{num}/comments",
-                headers=HEADERS, timeout=15,
-            ).json()
-            last_seen_id = seen.get(state_key, 0)
-            new_comments = [c for c in comments if c.get("id", 0) > last_seen_id]
-            other_comments = [c for c in new_comments
-                              if c.get("user", {}).get("login") != "makar52nn2016-jpg"]
-            if other_comments:
-                last = other_comments[-1]
-                who = last["user"]["login"]
-                body = (last.get("body", "") or "")[:300]
-                if "[bot]" not in who:
-                    tg_send(
-                        f"💬 Новый комментарий {repo}#{num}:\n"
-                        f"@{who}: {body}\n"
-                        f"https://github.com/{repo}/pull/{num}"
-                    )
-                if comments:
-                    seen[state_key] = max(c.get("id", 0) for c in comments)
+            # === Get CI state ===
+            sha = pr.get("head", {}).get("sha", "")
+            ci_state = "?"
+            check_conclusions = []
+            if sha:
+                try:
+                    st = requests.get(
+                        f"https://api.github.com/repos/{repo}/commits/{sha}/status",
+                        headers=HEADERS, timeout=15,
+                    ).json()
+                    ci_state = st.get("state", "?")
+                except Exception:
+                    pass
+                try:
+                    cr = requests.get(
+                        f"https://api.github.com/repos/{repo}/commits/{sha}/check-runs",
+                        headers=HEADERS, timeout=15,
+                    ).json()
+                    check_conclusions = [
+                        (c.get("name"), c.get("conclusion"))
+                        for c in cr.get("check_runs", [])[:5]
+                    ]
+                except Exception:
+                    pass
 
-            # 3) REVIEW STATE CHANGES
-            reviews = requests.get(
-                f"https://api.github.com/repos/{repo}/pulls/{num}/reviews",
-                headers=HEADERS, timeout=15,
-            ).json()
-            if reviews:
-                last_review = reviews[-1]
-                review_state = last_review.get("state")
-                review_by = last_review.get("user", {}).get("login", "?")
-                prev_review_state = pr_states.get(state_key, {}).get("review_state")
-                if review_state != prev_review_state and review_by != "makar52nn2016-jpg":
-                    emoji = {"APPROVED": "✅", "CHANGES_REQUESTED": "⚠️", "COMMENTED": "💬"}.get(review_state, "📝")
-                    tg_send(
-                        f"{emoji} {repo}#{num}: review {review_state} by @{review_by}\n"
-                        f"Задача: {label} (${bounty})\n"
-                        f"https://github.com/{repo}/pull/{num}"
-                    )
+            # === ALERT: CI failure (build/test, NOT Vercel fork) ===
+            # Determine if any "real" check failed (build, test, lint)
+            real_failures = []
+            for name, conclusion in check_conclusions:
+                if conclusion == "failure" and name:
+                    # Skip Vercel preview for fork PRs
+                    if repo in FORK_VERCEL_REPOS and "Vercel" in name:
+                        continue
+                    real_failures.append(name)
 
-            # 4) MERGEABLE STATE
-            mergeable = pr.get("mergeable")
+            prev_ci = pr_states.get(state_key, {}).get("ci_state")
+            if real_failures and ci_state != prev_ci:
+                tg_send(
+                    f"❌ CI FAIL: {repo}#{num} ({label})\n"
+                    f"Failed checks: {', '.join(real_failures[:3])}\n"
+                    f"Нужно поправить! https://github.com/{repo}/pull/{num}"
+                )
+                action_needed_count += 1
+
+            # === ALERT: dirty / conflict ===
             mergeable_state = pr.get("mergeable_state")
             prev_ms = pr_states.get(state_key, {}).get("mergeable_state")
             if mergeable_state == "dirty" and prev_ms != "dirty":
@@ -289,14 +356,99 @@ def check_prs(state):
                     f"⚠️ КОНФЛИКТ: {repo}#{num} ({label}) — dirty\n"
                     f"Нужен rebase! https://github.com/{repo}/pull/{num}"
                 )
+                action_needed_count += 1
+
+            # === Get reviews ===
+            reviews = requests.get(
+                f"https://api.github.com/repos/{repo}/pulls/{num}/reviews",
+                headers=HEADERS, timeout=15,
+            ).json()
+            last_review = reviews[-1] if reviews else None
+            review_state = last_review.get("state") if last_review else None
+            review_by = last_review.get("user", {}).get("login") if last_review else None
+
+            # === ALERT: new review from maintainer (not bot, not us) ===
+            if (review_state and review_by and review_by != "makar52nn2016-jpg"
+                    and "[bot]" not in review_by
+                    and review_state != prev_review_state):
+                emoji = {"APPROVED": "✅", "CHANGES_REQUESTED": "⚠️",
+                         "COMMENTED": "💬"}.get(review_state, "📝")
+                tg_send(
+                    f"{emoji} {repo}#{num}: review {review_state} by @{review_by}\n"
+                    f"Задача: {label} (${bounty})\n"
+                    f"https://github.com/{repo}/pull/{num}"
+                )
+                action_needed_count += 1
+
+            # === ALERT: APPROVED but >24h without merge → send ping text ===
+            if review_state == "APPROVED":
+                # Get last comment timestamp
+                comments = requests.get(
+                    f"https://api.github.com/repos/{repo}/issues/{num}/comments",
+                    headers=HEADERS, timeout=15,
+                ).json()
+                # find last comment by maintainer (not us, not bot)
+                last_maintainer_comment_at = None
+                for c in comments:
+                    u = c.get("user", {}).get("login", "")
+                    if u != "makar52nn2016-jpg" and "[bot]" not in u:
+                        last_maintainer_comment_at = c.get("created_at")
+                        break  # we want most recent — but list is asc, so reverse
+                if not last_maintainer_comment_at:
+                    # use PR created_at or updated_at
+                    last_maintainer_comment_at = pr.get("updated_at") or pr.get("created_at")
+
+                last_dt = datetime.fromisoformat(
+                    last_maintainer_comment_at.replace("Z", "+00:00")
+                )
+                hours_since = (now - last_dt).total_seconds() / 3600
+
+                if hours_since > 24:
+                    # only ping once per PR per 24h
+                    last_ping = pinged.get(state_key, 0)
+                    if now.timestamp() - last_ping > 24 * 3600:
+                        maintainers = get_repo_maintainers(repo, num)
+                        ping_text = generate_ping_comment(
+                            maintainers, repo, num, label, bounty
+                        )
+                        tg_send(ping_text)
+                        pinged[state_key] = now.timestamp()
+                        action_needed_count += 1
+
+            # === ALERT: new comment from maintainer ===
+            comments = requests.get(
+                f"https://api.github.com/repos/{repo}/issues/{num}/comments",
+                headers=HEADERS, timeout=15,
+            ).json()
+            last_seen_id = seen.get(state_key, 0)
+            new_other_comments = [
+                c for c in comments
+                if c.get("id", 0) > last_seen_id
+                and c.get("user", {}).get("login") != "makar52nn2016-jpg"
+                and "[bot]" not in c.get("user", {}).get("login", "")
+            ]
+            if new_other_comments:
+                last = new_other_comments[-1]
+                who = last["user"]["login"]
+                body = (last.get("body", "") or "")[:300]
+                tg_send(
+                    f"💬 Новый комментарий {repo}#{num}:\n"
+                    f"@{who}: {body}\n"
+                    f"https://github.com/{repo}/pull/{num}"
+                )
+                action_needed_count += 1
+            if comments:
+                seen[state_key] = max(c.get("id", 0) for c in comments)
 
             pr_states[state_key] = {
                 "merged": now_merged,
                 "state": pr.get("state"),
-                "mergeable": mergeable,
+                "mergeable": pr.get("mergeable"),
                 "mergeable_state": mergeable_state,
                 "title": pr.get("title", ""),
-                "review_state": reviews[-1].get("state") if reviews else None,
+                "review_state": review_state,
+                "review_by": review_by,
+                "ci_state": ci_state,
                 "updated_at": pr.get("updated_at"),
             }
         except Exception as e:
@@ -304,22 +456,25 @@ def check_prs(state):
 
     state["prev_pr_states"] = pr_states
     state["last_comment_seen"] = seen
-    return total_potential
+    state["pinged_prs"] = pinged
+    return action_needed_count
 
 
 # ============== BOUNTY SCANNER ==============
 BOUNTY_REPOS = [
     "stellar/stellar-demo-wallet",
-    "starscale-network/stellar-developer-bounties",
     "auscaster/frantic-board",
     "Heliobond/frontend",
     "dwebagents/AgentPipe",
     "UniversalAviator420/bounty-sandbox",
     "ancore-org/ancore",
+    "Soroban-Cookbook/Soroban_Cookbook_online",
+    "StellarRoute/WaveFlow",
 ]
 
 
 def scan_bounties(state):
+    """Scan for new bounty issues — only alert on NEW self-assignable ones."""
     seen_issues = state.setdefault("seen_bounties", {})
     found_new = 0
 
@@ -338,11 +493,13 @@ def scan_bounties(state):
                 num = issue.get("number")
                 key = f"{repo}#{num}"
                 if key not in seen_issues:
-                    seen_issues[key] = {"title": issue.get("title"), "url": issue.get("html_url")}
+                    seen_issues[key] = {"title": issue.get("title"),
+                                        "url": issue.get("html_url")}
                     found_new += 1
-                    labels = [l["name"] for l in issue.get("labels", [])]
                     assignee = issue.get("assignee")
                     if assignee is None:
+                        # NEW self-assignable bounty — alert (potential action)
+                        labels = [l["name"] for l in issue.get("labels", [])]
                         tg_send(
                             f"🎯 НОВЫЙ BOUNTY: {repo}#{num}\n"
                             f"Тема: {issue.get('title', '')[:80]}\n"
@@ -355,38 +512,41 @@ def scan_bounties(state):
     return found_new
 
 
-# ============== HEARTBEAT ==============
-def maybe_heartbeat(state):
+# ============== HEARTBEAT (silent — no alert unless problems) ==============
+def maybe_heartbeat(state, action_count):
+    """Heartbeat only sends if there are pending action-needed items OR every 6h summary."""
     now = time.time()
     last = state.get("last_heartbeat", 0)
+
+    # 6h regular heartbeat
     if now - last > 6 * 3600:
         state["last_heartbeat"] = now
-        merged_count = sum(1 for k, v in state.get("prev_pr_states", {}).items() if v.get("merged"))
-        total_potential = sum(b for _, _, b, _ in PRS
-                              if not state["prev_pr_states"].get(f"{_[0]}#{_[1]}", {}).get("merged"))
+        merged_count = sum(1 for k, v in state.get("prev_pr_states", {}).items()
+                          if v.get("merged"))
+        open_count = len(PRS) - merged_count
+        # only send heartbeat if there's something interesting OR user might think daemon is dead
         tg_send(
             f"💓 Daemon живой (GitHub Actions)\n"
             f"PRs merged: {merged_count}/{len(PRS)}\n"
-            f"Potential outstanding: ${total_potential}\n"
-            f"XLM: {state.get('prev_xlm', 0):.4f} | ETH: {state.get('prev_eth', 0):.6f}\n"
-            f"BTC: {state.get('prev_btc', 0):.8f} | SOL: {state.get('prev_sol', 0):.6f}"
+            f"Pending review: {open_count}\n"
+            f"Action items this run: {action_count}\n"
+            f"XLM: {state.get('prev_xlm', 0):.4f} | ETH: {state.get('prev_eth', 0):.6f}"
         )
     return state
 
 
 # ============== MAIN ==============
 def main():
-    log.info("Daemon start")
+    log.info("Daemon v2 start — smart alerting mode")
     state = load_state()
-    log.info("State loaded: keys=%s", list(state.keys()))
 
     state = check_wallets(state)
-    total_potential = check_prs(state)
+    action_count = check_prs(state)
     found_new = scan_bounties(state)
-    state = maybe_heartbeat(state)
+    state = maybe_heartbeat(state, action_count)
 
     save_state(state)
-    log.info("Daemon end. Open PRs potential: $%d, new bounties: %d", total_potential, found_new)
+    log.info("Daemon end. Action items: %d, new bounties scanned: %d", action_count, found_new)
 
 
 if __name__ == "__main__":
