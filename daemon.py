@@ -51,6 +51,14 @@ PRS = [
     ("Soroban-Cookbook/Soroban_Cookbook_online", 1011, 50, "fundamentals unaudited notice"),
     ("Soroban-Cookbook/Soroban_Cookbook_online", 1012, 50, "upgrade-checklist unaudited notice"),
     ("Soroban-Cookbook/Soroban_Cookbook_online", 1013, 50, "defi-patterns unaudited notice"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1017, 50, "setup-windows key-handling"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1018, 50, "setup-macos key-handling"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1019, 50, "deploy-testnet key-handling"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1020, 50, "patterns/overview unaudited"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1021, 50, "examples-index unaudited"),
+    ("drydocs/meridian", 982, 50, "format/protocolLabels tests"),
+    ("drydocs/meridian", 983, 50, "useAdminHistory hook test"),
+    ("soroban-forge-labs/soroban-forge", 488, 50, "network remove subcommand"),
 ]
 
 # Repos where Vercel/preview failure is expected for fork PRs (do NOT alert on those)
