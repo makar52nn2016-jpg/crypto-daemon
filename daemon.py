@@ -45,6 +45,10 @@ PRS = [
     ("Soroban-Cookbook/Soroban_Cookbook_online", 1007, 50, "authorization key+net guards"),
     ("Soroban-Cookbook/Soroban_Cookbook_online", 1008, 50, "authorization-trees key+net guards"),
     ("Soroban-Cookbook/Soroban_Cookbook_online", 1009, 50, "setup-linux key-handling"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1010, 50, "token-audit unaudited notice"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1011, 50, "fundamentals unaudited notice"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1012, 50, "upgrade-checklist unaudited notice"),
+    ("Soroban-Cookbook/Soroban_Cookbook_online", 1013, 50, "defi-patterns unaudited notice"),
 ]
 
 HEADERS = {
