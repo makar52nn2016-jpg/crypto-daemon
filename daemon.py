@@ -63,6 +63,9 @@ PRS = [
     ("gear5labs/chenpilot-client", 186, 50, "logger helper + console.log removal"),
     ("gear5labs/chenpilot-client", 187, 50, "format/validation tests"),
     ("StellarCanary/ProtocolCanary-Action", 306, 50, "main.ts error-branch tests"),
+    ("gear5labs/chenpilot-client", 189, 50, "dedupe socketManager tests"),
+    ("StellarCanary/ProtocolCanary-Fixtures", 241, 50, "non-array assert value rejected"),
+    ("StellarCanary/ProtocolCanary-Fixtures", 242, 50, "expected_file accepts existing"),
 ]
 
 # Repos where Vercel/preview failure is expected for fork PRs (do NOT alert on those)
