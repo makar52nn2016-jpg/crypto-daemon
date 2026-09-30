@@ -59,6 +59,10 @@ PRS = [
     ("drydocs/meridian", 982, 50, "format/protocolLabels tests"),
     ("drydocs/meridian", 983, 50, "useAdminHistory hook test"),
     ("soroban-forge-labs/soroban-forge", 488, 50, "network remove subcommand"),
+    ("gear5labs/chenpilot-client", 185, 50, "remove tsc_output.txt artifact"),
+    ("gear5labs/chenpilot-client", 186, 50, "logger helper + console.log removal"),
+    ("gear5labs/chenpilot-client", 187, 50, "format/validation tests"),
+    ("StellarCanary/ProtocolCanary-Action", 306, 50, "main.ts error-branch tests"),
 ]
 
 # Repos where Vercel/preview failure is expected for fork PRs (do NOT alert on those)
