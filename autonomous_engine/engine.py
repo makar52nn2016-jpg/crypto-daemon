@@ -27,7 +27,7 @@ import sys
 import json
 import time
 import subprocess
-import importlib
+import importlib.util  # CRITICAL: explicit util import (importlib.util isn't auto-loaded)
 from pathlib import Path
 from datetime import datetime, timezone
 
