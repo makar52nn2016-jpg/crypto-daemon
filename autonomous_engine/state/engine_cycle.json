@@ -1,0 +1,43 @@
+{
+  "cycle_count": 1,
+  "last_cycle_at": "2026-10-01T08:37:30.483122+00:00",
+  "last_fixer_swarm_at": null,
+  "last_llm_freeswitch_at": null,
+  "total_merges_detected": 0,
+  "total_reclaims_attempted": 0,
+  "total_payouts_received": 0,
+  "agent_results": [
+    {
+      "at": "2026-10-01T08:37:30.483145+00:00",
+      "agent": "cost_guardian",
+      "cycle": 1,
+      "result": {
+        "error": "Agent cost_guardian crashed: module 'importlib' has no attribute 'util'"
+      }
+    },
+    {
+      "at": "2026-10-01T08:37:30.483162+00:00",
+      "agent": "cooldown_timer",
+      "cycle": 1,
+      "result": {
+        "error": "Agent cooldown_timer crashed: module 'importlib' has no attribute 'util'"
+      }
+    },
+    {
+      "at": "2026-10-01T08:37:30.483176+00:00",
+      "agent": "merge_watcher",
+      "cycle": 1,
+      "result": {
+        "error": "Agent merge_watcher crashed: module 'importlib' has no attribute 'util'"
+      }
+    },
+    {
+      "at": "2026-10-01T08:37:30.483189+00:00",
+      "agent": "sniper_bulk",
+      "cycle": 1,
+      "result": {
+        "error": "Agent sniper_bulk crashed: module 'importlib' has no attribute 'util'"
+      }
+    }
+  ]
+}

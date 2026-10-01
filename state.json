@@ -7,8 +7,8 @@
     "Heliobond/frontend#676": {
       "merged": false,
       "state": "open",
-      "mergeable": false,
-      "mergeable_state": "dirty",
+      "mergeable": null,
+      "mergeable_state": "unknown",
       "title": "fix: registry decoder matches ProjectRegistry contract fields (#626)",
       "review_state": "APPROVED",
       "review_by": "sshdopey",
