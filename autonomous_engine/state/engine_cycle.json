@@ -1,7 +1,7 @@
 {
-  "cycle_count": 2,
-  "last_cycle_at": "2026-10-01T08:39:50.437587+00:00",
-  "last_fixer_swarm_at": null,
+  "cycle_count": 3,
+  "last_cycle_at": "2026-10-01T08:43:41.595513+00:00",
+  "last_fixer_swarm_at": "2026-10-01T08:43:41.595582+00:00",
   "last_llm_freeswitch_at": null,
   "total_merges_detected": 0,
   "total_reclaims_attempted": 0,
@@ -69,6 +69,46 @@
       "cycle": 2,
       "result": {
         "error": "Agent sniper_bulk crashed: module 'importlib' has no attribute 'util'"
+      }
+    },
+    {
+      "at": "2026-10-01T08:43:41.595538+00:00",
+      "agent": "cost_guardian",
+      "cycle": 3,
+      "result": {
+        "error": "Agent cost_guardian crashed: module 'importlib' has no attribute 'util'"
+      }
+    },
+    {
+      "at": "2026-10-01T08:43:41.595549+00:00",
+      "agent": "cooldown_timer",
+      "cycle": 3,
+      "result": {
+        "error": "Agent cooldown_timer crashed: module 'importlib' has no attribute 'util'"
+      }
+    },
+    {
+      "at": "2026-10-01T08:43:41.595558+00:00",
+      "agent": "merge_watcher",
+      "cycle": 3,
+      "result": {
+        "error": "Agent merge_watcher crashed: module 'importlib' has no attribute 'util'"
+      }
+    },
+    {
+      "at": "2026-10-01T08:43:41.595567+00:00",
+      "agent": "sniper_bulk",
+      "cycle": 3,
+      "result": {
+        "error": "Agent sniper_bulk crashed: module 'importlib' has no attribute 'util'"
+      }
+    },
+    {
+      "at": "2026-10-01T08:43:41.595576+00:00",
+      "agent": "fixer_swarm",
+      "cycle": 3,
+      "result": {
+        "error": "Agent fixer_swarm crashed: module 'importlib' has no attribute 'util'"
       }
     }
   ]
