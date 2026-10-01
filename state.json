@@ -21,8 +21,8 @@
     "gear5labs/chenpilot-client#185": {
       "merged": false,
       "state": "open",
-      "mergeable": null,
-      "mergeable_state": "unknown",
+      "mergeable": true,
+      "mergeable_state": "unstable",
       "title": "chore: remove committed tsc_output.txt artifact (#135)",
       "review_state": null,
       "review_by": null,
@@ -30,14 +30,13 @@
       "updated_at": "2026-09-30T05:25:52Z"
     },
     "gear5labs/chenpilot-client#186": {
-      "merged": true,
-      "state": "merged"
+      "merged": true
     },
     "gear5labs/chenpilot-client#187": {
       "merged": false,
       "state": "open",
-      "mergeable": null,
-      "mergeable_state": "unknown",
+      "mergeable": true,
+      "mergeable_state": "unstable",
       "title": "test: add unit tests for format and validation utilities (#141)",
       "review_state": null,
       "review_by": null,
@@ -45,8 +44,7 @@
       "updated_at": "2026-09-30T05:28:07Z"
     },
     "gear5labs/chenpilot-client#189": {
-      "merged": true,
-      "state": "merged"
+      "merged": true
     },
     "StellarCanary/ProtocolCanary-Action#306": {
       "merged": false,

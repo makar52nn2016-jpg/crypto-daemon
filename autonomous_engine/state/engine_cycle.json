@@ -1,7 +1,7 @@
 {
-  "cycle_count": 5,
-  "last_cycle_at": "2026-10-01T10:36:17.237844+00:00",
-  "last_fixer_swarm_at": "2026-10-01T08:43:41.595582+00:00",
+  "cycle_count": 6,
+  "last_cycle_at": "2026-10-01T11:07:33.404923+00:00",
+  "last_fixer_swarm_at": "2026-10-01T11:07:36.472840+00:00",
   "last_llm_freeswitch_at": null,
   "total_merges_detected": 0,
   "total_reclaims_attempted": 0,
@@ -240,6 +240,81 @@
       "cycle": 5,
       "result": {
         "error": "Agent sniper_bulk crashed: 'scan_history'"
+      }
+    },
+    {
+      "at": "2026-10-01T11:07:33.688455+00:00",
+      "agent": "cost_guardian",
+      "cycle": 6,
+      "result": {
+        "success": true,
+        "result": {
+          "halt": false,
+          "reason": null,
+          "checks": [
+            {
+              "agent": "sniper_sponsorship",
+              "result": {
+                "status": "error",
+                "reason": "HTTP Error 403: Forbidden"
+              }
+            },
+            {
+              "agent": "sniper_self_paid",
+              "result": {
+                "status": "error",
+                "reason": "HTTP Error 403: Forbidden"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "at": "2026-10-01T11:07:34.578977+00:00",
+      "agent": "cooldown_timer",
+      "cycle": 6,
+      "result": {
+        "success": true,
+        "result": {
+          "action": "reclaim_blocked",
+          "result": {
+            "returncode": 1,
+            "stdout": "🤖 Re-claiming Frantic #136 as agent-b94b60\n\n============================================================\nStep 1: POST /v1/claims\n  HTTP 409\n  Response: {\n  \"ok\": false,\n  \"error\": \"cooldown_active\",\n  \"message\": \"claim fuse expired\",\n  \"retry_after_seconds\": 16206\n}\n\n❌ Claim failed: cooldown_active - claim fuse expired\n",
+            "stderr": ""
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-10-01T11:07:36.155045+00:00",
+      "agent": "merge_watcher",
+      "cycle": 6,
+      "result": {
+        "success": true,
+        "result": {
+          "actions": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-01T11:07:36.468359+00:00",
+      "agent": "sniper_bulk",
+      "cycle": 6,
+      "result": {
+        "error": "Agent sniper_bulk crashed: 'scan_history'"
+      }
+    },
+    {
+      "at": "2026-10-01T11:07:36.472833+00:00",
+      "agent": "fixer_swarm",
+      "cycle": 6,
+      "result": {
+        "success": true,
+        "result": {
+          "status": "no_llm",
+          "queue_size": 0
+        }
       }
     }
   ]
