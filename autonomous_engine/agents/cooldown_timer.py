@@ -241,7 +241,25 @@ def run_cycle() -> dict:
                         cooldown_ends, tz=timezone.utc
                     ).isoformat()
                     state["claim_status"] = "cooldown_active"
-                    print(f"[Cooldown-Timer] ⏳ Cooldown active. Ends at {state['cooldown_ends_at']} ({retry_after}s remaining)")
+                    state["retry_after_seconds"] = retry_after
+                    print(f"[Cooldown-Timer] ⏳ Cooldown active. Ends at {state['cooldown_ends_at']} ({retry_after}s = {retry_after/3600:.1f}h remaining)")
+
+                    # PRE-COMPUTE PAYLOAD: While we wait, prepare the claim payload
+                    # so when cooldown ends, we fire instantly without recomputation.
+                    state["precomputed_payload"] = {
+                        "bounty": BOUNTY_NUMBER,
+                        "agent_kid": AGENT_KID,
+                        "agent_token_env": "FRANTIC_AGENT_TOKEN",
+                        "artifacts": [
+                            "pr_url=https://github.com/auscaster/stompstart-startup-list/pull/9",
+                            "website_url=https://agentbounties.app/",
+                            "logo_url=https://raw.githubusercontent.com/makar52nn2016-jpg/stompstart-startup-list/4194a510647443a74654e1aa34acc4eb16be0b76/startups/agentbounties/logo.png",
+                            "product_url=https://raw.githubusercontent.com/makar52nn2016-jpg/stompstart-startup-list/4194a510647443a74654e1aa34acc4eb16be0b76/startups/agentbounties/product.png",
+                        ],
+                        "reclaim_script_path": str(TRUDYAGI_HOME / "reclaim_136.py"),
+                        "ready_to_fire": True,
+                    }
+                    print(f"[Cooldown-Timer] 🎯 Pre-computed claim payload — ready to fire instantly when cooldown ends")
                 else:
                     state["claim_status"] = "cooldown_active_unknown"
                     print(f"[Cooldown-Timer] ⏳ Cooldown active but no retry_after_seconds in response")

@@ -52,6 +52,8 @@ def load_state() -> dict:
         "candidates_queued": 0,
         "candidates_processed": 0,
         "queue": [],
+        "scan_history": [],  # track when scans happened + result count
+        "rate_limit_hits": 0,  # how many times GitHub returned 403
     }
 
 
@@ -59,6 +61,26 @@ def save_state(state: dict) -> None:
     STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(STATE_FILE, "w") as f:
         json.dump(state, f, indent=2, ensure_ascii=False)
+
+
+def should_skip_scan(state: dict) -> bool:
+    """Skip scan if last scan was < 15 min ago — avoids burning GitHub quota.
+
+    GitHub Search API has 30 req/min limit + 1000 req/hr per token.
+    With daemon.py + sniper.py + engine.py all using same token, we burn quota fast.
+    Cache strategy: only re-scan if last scan was > 15 min ago (3 cycles).
+    """
+    last = state.get("last_scan_at")
+    if not last:
+        return False
+    try:
+        from datetime import datetime, timezone
+        last_dt = datetime.fromisoformat(last.replace("Z", "+00:00"))
+        now = datetime.now(timezone.utc)
+        age_sec = (now - last_dt).total_seconds()
+        return age_sec < 900  # 15 min
+    except Exception:
+        return False
 
 
 def scan_github_issues(query_url: str) -> list:
@@ -78,9 +100,23 @@ def scan_github_issues(query_url: str) -> list:
             return data.get("items", [])
     except urllib.error.HTTPError as e:
         if e.code == 403:
-            print(f"[Sniper-Bulk] GitHub rate limited. Skipping.")
+            print(f"[Sniper-Bulk] GitHub rate limited (403). Will skip rest of cycle.")
+            # Look for rate limit reset time in headers
+            reset = e.headers.get("X-RateLimit-Reset")
+            if reset:
+                try:
+                    from datetime import datetime, timezone
+                    reset_dt = datetime.fromtimestamp(int(reset), tz=timezone.utc)
+                    print(f"[Sniper-Bulk] Quota resets at: {reset_dt.isoformat()}")
+                except Exception:
+                    pass
             return []
-        return []
+        elif e.code == 422:
+            print(f"[Sniper-Bulk] GitHub 422 (query too complex). Skipping.")
+            return []
+        else:
+            print(f"[Sniper-Bulk] GitHub HTTP {e.code}. Skipping.")
+            return []
     except Exception as e:
         print(f"[Sniper-Bulk] GitHub error: {e}")
         return []
@@ -116,9 +152,24 @@ def filter_candidate(issue: dict) -> bool:
 
 
 def run_cycle() -> dict:
-    """Scan all sources, add matching tasks to queue."""
+    """Scan all sources, add matching tasks to queue.
+
+    Caching strategy: skip scan if last scan was < 15 min ago.
+    """
     print(f"[Sniper-Bulk] Cycle start at {datetime.now(timezone.utc).isoformat()}")
     state = load_state()
+
+    # CACHE CHECK: Skip scan if recent (saves GitHub quota)
+    if should_skip_scan(state):
+        print(f"[Sniper-Bulk] ⏭️ Skipping scan — last scan was < 15 min ago (caching)")
+        print(f"[Sniper-Bulk] Queue size: {len(state['queue'])} tasks pending")
+        return {
+            "new_candidates": 0,
+            "queue_size": len(state["queue"]),
+            "skipped": True,
+            "reason": "cached (last scan < 15 min ago)",
+        }
+
     state["last_scan_at"] = datetime.now(timezone.utc).isoformat()
 
     new_candidates = []
@@ -145,6 +196,14 @@ def run_cycle() -> dict:
                     new_candidates.append(candidate)
 
     state["candidates_queued"] = state.get("candidates_queued", 0) + len(new_candidates)
+    state["scan_history"].append({
+        "at": state["last_scan_at"],
+        "new_found": len(new_candidates),
+        "queue_size_after": len(state["queue"]),
+    })
+    # Trim scan_history to last 50 entries
+    state["scan_history"] = state["scan_history"][-50:]
+
     save_state(state)
 
     print(f"[Sniper-Bulk] {len(new_candidates)} new candidates added to queue")
@@ -154,6 +213,7 @@ def run_cycle() -> dict:
         "new_candidates": len(new_candidates),
         "queue_size": len(state["queue"]),
         "candidates_preview": [c["title"][:50] for c in new_candidates[:3]],
+        "skipped": False,
     }
 
 

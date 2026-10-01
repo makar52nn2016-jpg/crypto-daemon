@@ -205,22 +205,30 @@ def run_cycle() -> dict:
             }
             state["events"].append(event)
 
-            # Wait 60s for stompstart.com to publish
-            print(f"[Merge-Watcher] Waiting 60s for stompstart.com to publish {slug}...")
-            time.sleep(60)
-
-            # Check publication
-            published = check_stompstart_publication(slug)
-            print(f"[Merge-Watcher] stompstart.com publication: {published}")
+            # AGGRESSIVE POLLING: Check stompstart.com every 5s for up to 2 min
+            # (was: wait 60s, check once, retry once — too slow)
+            print(f"[Merge-Watcher] Aggressive 5s polling for stompstart.com publication of {slug}...")
+            published = False
+            poll_count = 0
+            max_polls = 24  # 24 × 5s = 2 minutes max
+            while poll_count < max_polls:
+                poll_count += 1
+                published = check_stompstart_publication(slug)
+                if published:
+                    print(f"[Merge-Watcher] ✅ Published! (after {poll_count} polls = {poll_count * 5}s)")
+                    break
+                if poll_count < max_polls:
+                    print(f"[Merge-Watcher] Poll #{poll_count}/{max_polls}: not yet published, wait 5s...")
+                    time.sleep(5)
 
             if published:
-                # Trigger Frantic delivery via reclaim script
+                # IMMEDIATE delivery trigger (no more waiting)
                 pr_url = f"https://github.com/{repo}/pull/{pr_number}"
                 website_url = WEBSITE_URLS.get(slug, "")
                 logo_url = LOGO_URLS.get(slug, "")
                 product_url = PRODUCT_URLS.get(slug)
 
-                print(f"[Merge-Watcher] Triggering Frantic delivery...")
+                print(f"[Merge-Watcher] 🚀 Triggering Frantic delivery NOW...")
                 result = trigger_frantic_delivery(pr_url, website_url, logo_url, product_url)
 
                 state["deliveries_triggered"] = state.get("deliveries_triggered", 0) + 1
@@ -231,6 +239,8 @@ def run_cycle() -> dict:
                     "slug": slug,
                     "result_code": result.get("returncode"),
                     "stdout_snippet": result.get("stdout", "")[:500],
+                    "poll_count": poll_count,
+                    "poll_duration_sec": poll_count * 5,
                 }
                 state["events"].append(delivery_event)
                 actions.append({
@@ -238,42 +248,18 @@ def run_cycle() -> dict:
                     "pr": pr_key,
                     "slug": slug,
                     "success": result.get("returncode") == 0,
+                    "poll_count": poll_count,
+                    "delivery_latency_sec": poll_count * 5,
                 })
             else:
-                # Wait another 60s and try again
-                print(f"[Merge-Watcher] Not yet published. Waiting another 60s...")
-                time.sleep(60)
-                published = check_stompstart_publication(slug)
-                if published:
-                    print(f"[Merge-Watcher] Published on retry! Triggering delivery...")
-                    pr_url = f"https://github.com/{repo}/pull/{pr_number}"
-                    result = trigger_frantic_delivery(
-                        pr_url,
-                        WEBSITE_URLS.get(slug, ""),
-                        LOGO_URLS.get(slug, ""),
-                        PRODUCT_URLS.get(slug),
-                    )
-                    state["deliveries_triggered"] = state.get("deliveries_triggered", 0) + 1
-                    state["events"].append({
-                        "at": datetime.now(timezone.utc).isoformat(),
-                        "type": "DELIVERY_TRIGGERED_LATE",
-                        "pr": pr_key,
-                        "slug": slug,
-                        "result_code": result.get("returncode"),
-                    })
-                    actions.append({
-                        "action": "delivery_triggered_late",
-                        "pr": pr_key,
-                        "success": result.get("returncode") == 0,
-                    })
-                else:
-                    print(f"[Merge-Watcher] ⚠️ Publication not detected. Will retry next cycle.")
-                    state["events"].append({
-                        "at": datetime.now(timezone.utc).isoformat(),
-                        "type": "PUBLICATION_PENDING",
-                        "pr": pr_key,
-                        "slug": slug,
-                    })
+                print(f"[Merge-Watcher] ⚠️ Publication not detected after {poll_count * 5}s. Will retry next cycle.")
+                state["events"].append({
+                    "at": datetime.now(timezone.utc).isoformat(),
+                    "type": "PUBLICATION_PENDING",
+                    "pr": pr_key,
+                    "slug": slug,
+                    "poll_count": poll_count,
+                })
 
         elif is_merged:
             # Already merged — check if we previously triggered delivery
