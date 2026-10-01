@@ -34,9 +34,14 @@
     "NSPG13/agent-bounties#1374",
     "NSPG13/agent-bounties#1369",
     "zhangjiayang6835-cyber/bounty-plaza#1219",
-    "NSPG13/agent-bounties#1262"
+    "NSPG13/agent-bounties#1262",
+    "jflournoy/for-funsies#64",
+    "jflournoy/for-funsies#63",
+    "jflournoy/for-funsies#62",
+    "jflournoy/for-funsies#61",
+    "jflournoy/for-funsies#60"
   ],
-  "last_scan": 1790836680.3504486,
+  "last_scan": 1790836893.600225,
   "wallets_alerted": [],
   "agentbounty_seen": [
     "0x73fa8fec134f131caa88fe3e0e16006485c098001344857e26640c51744ce234",
