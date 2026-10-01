@@ -152,3 +152,7 @@
 - Re-check comments on ALL open PRs periodically (not just the latest one)
 - GitHub API `?sort=created&direction=desc&per_page=100` gets all comments newest first
 - If CI shows `ms=unstable` → CI is running; if `ms=dirty` → merge conflict; if `ms=clean` → ready to merge
+
+## 2026-10-01: Money: ['+9.808123 XLM', '+0.104126 TON']
+
+## 2026-10-01: Comments: 2
