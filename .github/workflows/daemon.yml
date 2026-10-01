@@ -43,18 +43,25 @@ jobs:
           npm install z-ai-web-dev-sdk --no-save
 
       - name: Setup Z.ai config (for free LLM backend)
-        if: ${{ secrets.Z_AI_CONFIG != '' }}
+        env:
+          Z_AI_CONFIG: ${{ secrets.Z_AI_CONFIG }}
         working-directory: trudyagi
         run: |
           # z-ai CLI looks for .z-ai-config in cwd, home, or /etc
-          echo '${{ secrets.Z_AI_CONFIG }}' > .z-ai-config
+          # Note: GHA hides secrets in `if:` conditions, so we always run this step
+          # and check inside via env var (which IS visible to bash).
+          if [ -z "$Z_AI_CONFIG" ]; then
+            echo "⚠️ Z_AI_CONFIG secret not set — will use demo mode for trudyagi"
+            exit 0
+          fi
+          echo "$Z_AI_CONFIG" > .z-ai-config
           chmod 600 .z-ai-config
           # Verify z-ai CLI works
           ../node_modules/.bin/z-ai chat -p "ping" -o /tmp/zai_health.json || true
           if [ -f /tmp/zai_health.json ]; then
             echo "✅ z-ai CLI configured"
           else
-            echo "⚠️ z-ai CLI not configured — will use demo mode"
+            echo "⚠️ z-ai CLI test failed — will use demo mode"
           fi
 
       - name: Run daemon
