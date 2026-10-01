@@ -1,0 +1,17 @@
+{
+  "last_check_at": "2026-10-01T08:46:05.571989+00:00",
+  "claim_status": "cooldown_active",
+  "retry_after_seconds": null,
+  "cooldown_ends_at": "2026-10-01T15:37:40.386548+00:00",
+  "reclaim_attempts": 1,
+  "successful_reclaims": 0,
+  "failed_reclaims": 1,
+  "events": [
+    {
+      "at": "2026-10-01T08:46:06.386278+00:00",
+      "type": "RECLAIM_ATTEMPT",
+      "result": "failed",
+      "details": ""
+    }
+  ]
+}

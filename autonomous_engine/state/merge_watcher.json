@@ -1,0 +1,35 @@
+{
+  "last_check_at": "2026-10-01T08:46:06.390505+00:00",
+  "pr_states": {
+    "auscaster/stompstart-startup-list#9": {
+      "state": "open",
+      "merged": false,
+      "merged_at": null,
+      "merge_commit_sha": "86ef1586bd4eb0cf5c160eeb4f7012e5da93fa38",
+      "head_sha": "4c6bca77bf87d7a94940b9a26459d3d5228b7058",
+      "title": "Add AgentBounties",
+      "updated_at": "2026-10-01T07:31:28Z"
+    },
+    "auscaster/stompstart-startup-list#21": {
+      "state": "open",
+      "merged": false,
+      "merged_at": null,
+      "merge_commit_sha": "18c4f6612efde8e3eac7df4bd400f4cacea5528b",
+      "head_sha": "6ae4d943d24daf8acb8cf6486792e121a4f2ad43",
+      "title": "Add Rome OS",
+      "updated_at": "2026-10-01T07:34:15Z"
+    },
+    "auscaster/stompstart-startup-list#22": {
+      "state": "open",
+      "merged": false,
+      "merged_at": null,
+      "merge_commit_sha": "67c438fbb65edf9ac87bd9ff8b456aba4b22db04",
+      "head_sha": "1a14d68542b25595798b634c694c2f03e8a53d6d",
+      "title": "Add FableCut",
+      "updated_at": "2026-10-01T07:34:16Z"
+    }
+  },
+  "merges_detected": 0,
+  "deliveries_triggered": 0,
+  "events": []
+}
