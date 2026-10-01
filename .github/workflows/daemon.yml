@@ -66,19 +66,30 @@ jobs:
             cat /tmp/zai_health.json 2>/dev/null || true
           fi
 
-      - name: Run daemon
+      - name: Run daemon (legacy — wallet/PR monitoring)
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
           TG_CHAT: ${{ secrets.TG_CHAT }}
         run: python daemon.py
 
-      - name: Run sniper
+      - name: Run sniper (legacy — GitHub bounty discovery)
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
           TG_CHAT: ${{ secrets.TG_CHAT }}
         run: python sniper.py
+
+      - name: Run Autonomous Profit Engine (cost_guardian + cooldown_timer + merge_watcher + sniper_bulk + fixer_swarm)
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT: ${{ secrets.TG_CHAT }}
+          FRANTIC_AGENT_TOKEN: ${{ secrets.FRANTIC_AGENT_TOKEN }}
+          PIMLICO_API_KEY: ${{ secrets.PIMLICO_API_KEY }}
+          LLM_BACKEND: ${{ secrets.LLM_BACKEND || 'zai' }}
+        run: python autonomous_engine/engine.py
 
       - name: Run Trudyagi pipeline (autonomous 4-role agent corporation)
         continue-on-error: true

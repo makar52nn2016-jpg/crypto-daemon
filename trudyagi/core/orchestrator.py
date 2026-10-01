@@ -130,17 +130,28 @@ def run_pipeline(
         operator_output = _strip_yaml_fence(operator_output)
         task.save_role_output("operator", operator_output)
 
-        # Execute any real shell commands mentioned in operator output
-        # (in demo mode these are simulated; in real mode, the operator returns
-        # commands and we run them here, saving outputs as step-N.json artifacts)
+        # Execute any real shell commands mentioned in operator output.
+        # This is the CRITICAL step — we run the commands and save REAL outputs
+        # to step-N.json. The LLM's `output:` field is HALLUCINATED and CANNOT
+        # be trusted. Контролёр must read the REAL step-N.json, not the LLM's
+        # claimed output.
         executed_artifacts = _execute_operator_steps(operator_output, task.task_dir)
         for art in executed_artifacts:
             task.add_artifact(art["name"], art["path"])
 
+        # Build the REAL operator report — REPLACING the LLM's claimed `output:`
+        # with the actual stdout from step-N.json execution. This is what
+        # Контролёр will see. Without this, the LLM hallucinates success
+        # ("merged: true") when the real curl returned 401 Bad credentials.
+        real_operator_report = _build_real_operator_report(
+            operator_output, executed_artifacts, task.task_dir
+        )
+        task.save_role_output("operator", real_operator_report)
+
         worklog.log_step(
             task_id=task_id,
             role="Оператор",
-            step_desc=f"Executed plan (attempt {revisions + 1})",
+            step_desc=f"Executed plan (attempt {revisions + 1}) — {len(executed_artifacts)} real commands",
             duration_sec=time.time() - t0,
             artifact_path=str(task.task_dir / "operator_report.yaml"),
             worklog_path=worklog_path,
@@ -150,11 +161,18 @@ def run_pipeline(
         task.transition("REVIEWING", role="controller", note="Controller verifying")
         t0 = time.time()
         controller_prompt = load_role_prompt("controller", roles_dir=roles_dir)
+        # Pass REAL operator report (with actual stdout from step-N.json),
+        # NOT the LLM's hallucinated output. Контролёр verifies against reality.
         controller_input = f"""Plan from Мастер:
 {master_output}
 
-Report from Оператор:
-{operator_output}
+Report from Оператор (with REAL execution results, not LLM claims):
+{real_operator_report}
+
+CRITICAL: The `output:` fields below are from REAL command execution (step-N.json).
+Do NOT trust the LLM's original `output:` hallucinations — verify the real stdout/stderr.
+If real stdout shows an error (HTTP 4xx/5xx, empty response, "Bad credentials", etc),
+the step is FAILED regardless of what the LLM claimed.
 """
         controller_output = llm.chat(controller_prompt, controller_input)
         controller_output = _strip_yaml_fence(controller_output)
@@ -222,6 +240,87 @@ Report from Оператор:
     # Should never reach here
     task.transition("FAILED", role="orchestrator", note="Unexpected loop exit")
     return task.load()
+
+
+def _build_real_operator_report(
+    llm_operator_yaml: str,
+    executed_artifacts: list[dict],
+    task_dir: Path,
+) -> str:
+    """Replace LLM's hallucinated `output:` fields with REAL stdout from step-N.json.
+
+    The LLM's operator_report.yaml contains fabricated output fields like:
+        output: '{"merged": true, ...}'  ← THIS IS HALLUCINATED
+
+    The REAL output (from subprocess execution) is saved in step-N.json:
+        stdout: '{"message": "Bad credentials", ...}'  ← THIS IS REALITY
+
+    This function rewrites the operator YAML to replace hallucinated outputs
+    with real ones, so Контролёр verifies against reality, not LLM fiction.
+
+    It also prepends a "REAL EXECUTION RESULTS" section showing each step's
+    actual stdout/stderr/status — making it impossible for the controller to
+    miss the truth.
+
+    Args:
+        llm_operator_yaml: the LLM's original operator_report.yaml (with hallucinated output)
+        executed_artifacts: list of {name, path} dicts from _execute_operator_steps
+        task_dir: task directory path
+
+    Returns:
+        The rewritten operator_report.yaml content — REAL outputs replace LLM hallucinations.
+    """
+    # Load real execution results
+    real_results = []
+    for art in executed_artifacts:
+        if not art["name"].startswith("step-") or "BLOCKED" in art["name"]:
+            continue
+        try:
+            with open(art["path"]) as f:
+                data = json.load(f)
+            real_results.append(data)
+        except (OSError, json.JSONDecodeError):
+            continue
+
+    if not real_results:
+        # No real commands executed — just return the LLM's hallucinated output
+        # with a warning header
+        return f"""⚠️ WARNING: NO REAL COMMANDS WERE EXECUTED.
+
+The Operator LLM did not produce any executable `command:` lines.
+Below is the LLM's report — treat all `output:` fields as UNVERIFIED CLAIMS.
+
+---
+{llm_operator_yaml}"""
+
+    # Build the REAL execution results block
+    real_block = ["# REAL EXECUTION RESULTS (from subprocess.run)\n"]
+    real_block.append("These are the ACTUAL stdout/stderr from running each command.")
+    real_block.append("The LLM's original `output:` fields below were HALLUCINATED and")
+    real_block.append("have been SUPERSEDED by these real results.\n")
+    real_block.append("")
+
+    for r in real_results:
+        real_block.append(f"## {r.get('step_id', '?')} — status: {r.get('status', '?')}")
+        real_block.append(f"Command: `{r.get('command', '?')}`")
+        real_block.append(f"Duration: {r.get('duration_sec', '?')}s")
+        stdout = (r.get('stdout', '') or '').strip()
+        stderr = (r.get('stderr', '') or '').strip()
+        if stdout:
+            # Truncate long outputs to keep prompt size manageable
+            if len(stdout) > 1000:
+                stdout = stdout[:1000] + "\n... [truncated]"
+            real_block.append(f"REAL stdout:\n```{stdout}```")
+        if stderr:
+            if len(stderr) > 500:
+                stderr = stderr[:500] + "\n... [truncated]"
+            real_block.append(f"REAL stderr:\n```{stderr}```")
+        real_block.append("")
+
+    real_block.append("## Original LLM operator report (output fields are HALLUCINATED)")
+    real_block.append(llm_operator_yaml)
+
+    return "\n".join(real_block)
 
 
 def _execute_operator_steps(operator_yaml: str, task_dir: Path) -> list[dict]:

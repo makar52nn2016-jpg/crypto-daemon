@@ -52,11 +52,28 @@ rsvg-convert -w 512 -h 512 input.svg -o output.png
 ```
 
 ### Переменные окружения (доступны)
-- `GH_TOKEN` — GitHub PAT
+- `GH_TOKEN` — GitHub PAT (используй КАК `$GH_TOKEN` в curl: `-H "Authorization: token $GH_TOKEN"`)
 - `TG_TOKEN`, `TG_CHAT` — Telegram bot
-- `FRANTIC_AGENT_TOKEN` — `fr_agent_...` для Frantic API
+- `FRANTIC_AGENT_TOKEN` — `fr_agent_...` для Frantic API (используй КАК `$FRANTIC_AGENT_TOKEN`, НЕ подставляй literally)
 - `PIMLICO_API_KEY` — `pim_...`
 - `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL` — для LLM calls (если нужно)
+
+### ⚠️ CRITICAL ПРАВИЛА (НЕ НАРУШАТЬ)
+
+1. **ВСЕГДА используй `$VAR_NAME` синтаксис для токенов**, NEVER пиши literally `fr_agent_<token>` или `ghp_xxx` — orchestrator подставит реальные значения из env. Если ты literally пишешь `<token>`, API вернёт `token_required` и шаг FAILed.
+
+2. **ВСЕГДА добавляй auth header в curl для API calls**:
+   ```bash
+   curl -s -H "Authorization: token $GH_TOKEN" https://api.github.com/...
+   curl -s -H "Authorization: Bearer $FRANTIC_AGENT_TOKEN" https://gofrantic.com/v1/...
+   ```
+   Без auth header → API вернёт 401 Bad credentials или rate limit.
+
+3. **Используй правильный HTTP method**: `curl -s` (GET) по умолчанию. Не используй `curl -I` (HEAD) если endpoint не указывает иное — многие APIs возвращают 405 Method Not Allowed для HEAD.
+
+4. **Output: поле НЕ ВЫДУМЫВАЙ!** — orchestrator ВЫПОЛНЯЕТ твою `command:` через subprocess и сохраняет реальный stdout в step-N.json. Твоё поле `output:` будет ПРОИГНОРИРОВАНО — Контролёр видит только реальный stdout. Если ты пишешь `output: '{"merged": true}'` а реальный curl вернёт `{"message": "Bad credentials"}` — Контролёр скажет FAIL.
+
+5. **Если нужна авторизация, проверь что env var существует**: `echo $GH_TOKEN | head -c 10` покажет первые 10 символов — если пусто, скажи в errors.
 
 ### Время работы
 - Maximum 60 seconds per step
