@@ -7,15 +7,19 @@ This is the recommended backend for Trudyagi because:
   3. Supports system prompts via `--system` flag
   4. Returns OpenAI-compatible JSON output
 
-Required: z-ai CLI installed (npm install -g z-ai-web-dev-sdk OR local node_modules)
+Required: z-ai-web-dev-sdk npm package + node.js (>=20) OR bun runtime
 
 Setup on GitHub Actions:
-  - npm install z-ai-web-dev-sdk (installs z-ai CLI)
-  - Copy /etc/.z-ai-config from secret Z_AI_CONFIG (JSON with baseUrl/apiKey/token/etc)
+  - npm install z-ai-web-dev-sdk (installs z-ai CLI source)
+  - node.js provided by actions/setup-node
+  - Copy .z-ai-config from secret Z_AI_CONFIG (JSON with baseUrl/apiKey/token/etc)
+
+Note: z-ai CLI's shebang is `#!/usr/bin/env bun` but it ALSO runs under `node` —
+we detect both and use whichever is available. This avoids needing bun on GHA.
 
 Usage in Trudyagi:
   - In .env: LLM_BACKEND=zai (overrides OpenAI-compatible client)
-  - No LLM_API_KEY needed (uses /etc/.z-ai-config)
+  - No LLM_API_KEY needed (uses .z-ai-config file)
 """
 
 import json
@@ -27,23 +31,84 @@ from pathlib import Path
 from typing import Optional
 
 
+def _find_z_ai_invocation():
+    """Find how to invoke z-ai CLI.
+
+    Returns a list (argv) suitable for subprocess.run.
+    Tries, in order:
+      1. `z-ai` if on PATH (assumes bun runtime is available)
+      2. `bun /path/to/z-ai-web-dev-sdk/dist/cli.js` (if bun available)
+      3. `node /path/to/z-ai-web-dev-sdk/dist/cli.js` (universal fallback)
+
+    Returns None if z-ai SDK is not installed anywhere.
+    """
+    # Try direct `z-ai` binary first (local dev with bun installed)
+    if shutil.which("z-ai"):
+        # Quick check: does it actually run?
+        try:
+            result = subprocess.run(
+                ["z-ai", "--help"], capture_output=True, text=True, timeout=10
+            )
+            if result.returncode == 0:
+                return ["z-ai"]
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            pass
+
+    # Find the SDK's cli.js — check common locations
+    cli_js_paths = [
+        # 1. Project's local node_modules (cwd-relative)
+        Path.cwd() / "node_modules" / "z-ai-web-dev-sdk" / "dist" / "cli.js",
+        # 2. Project root node_modules (when running from trudyagi/ subdir)
+        Path.cwd().parent / "node_modules" / "z-ai-web-dev-sdk" / "dist" / "cli.js",
+        # 3. Home dir projects
+        Path.home() / "my-project" / "node_modules" / "z-ai-web-dev-sdk" / "dist" / "cli.js",
+        # 4. Global node_modules (npm install -g)
+        Path("/usr/local/lib/node_modules/z-ai-web-dev-sdk/dist/cli.js"),
+        Path("/usr/lib/node_modules/z-ai-web-dev-sdk/dist/cli.js"),
+    ]
+
+    cli_js = None
+    for path in cli_js_paths:
+        if path.exists():
+            cli_js = path
+            break
+
+    if not cli_js:
+        # Search PATH for any z-ai-web-dev-sdk
+        for path_dir in os.environ.get("PATH", "").split(os.pathsep):
+            candidate = Path(path_dir).parent / "node_modules" / "z-ai-web-dev-sdk" / "dist" / "cli.js"
+            if candidate.exists():
+                cli_js = candidate
+                break
+            # Also check `lib` subdirectory
+            candidate2 = Path(path_dir).parent / "lib" / "node_modules" / "z-ai-web-dev-sdk" / "dist" / "cli.js"
+            if candidate2.exists():
+                cli_js = candidate2
+                break
+
+    if not cli_js:
+        return None
+
+    # Try `bun` first (faster), then `node` (universal)
+    for runtime in ("bun", "node"):
+        if shutil.which(runtime):
+            return [runtime, str(cli_js)]
+
+    return None
+
+
 class ZaiLLMClient:
     """LLM client that calls `z-ai chat` CLI via subprocess.
 
-    Zero-cost: uses Z.ai's free GLM-4-Plus endpoint via /etc/.z-ai-config.
+    Zero-cost: uses Z.ai's free GLM-4-Plus endpoint via .z-ai-config.
     """
 
     def __init__(self, *args, **kwargs):
-        # Find z-ai CLI binary
-        self.z_ai_bin = shutil.which("z-ai")
-        if not self.z_ai_bin:
-            # Try local node_modules
-            local_bin = Path("/home/z/my-project/node_modules/.bin/z-ai")
-            if local_bin.exists():
-                self.z_ai_bin = str(local_bin)
-        if not self.z_ai_bin:
+        self.invocation = _find_z_ai_invocation()
+        if not self.invocation:
             raise RuntimeError(
-                "z-ai CLI not found. Install with: npm install z-ai-web-dev-sdk"
+                "z-ai CLI not found. Install with: npm install z-ai-web-dev-sdk "
+                "(needs bun or node >=20 runtime)"
             )
 
     def chat(self, system_prompt: str, user_prompt: str) -> str:
@@ -57,8 +122,7 @@ class ZaiLLMClient:
             output_path = tmp.name
 
         try:
-            cmd = [
-                self.z_ai_bin,
+            cmd = self.invocation + [
                 "chat",
                 "-p", user_prompt,
                 "-s", system_prompt,
@@ -68,7 +132,7 @@ class ZaiLLMClient:
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=120,
+                timeout=120,  # 2 min max — GLM can be slow on complex prompts
             )
             if result.returncode != 0:
                 raise RuntimeError(

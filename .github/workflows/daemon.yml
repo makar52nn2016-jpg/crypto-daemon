@@ -56,12 +56,14 @@ jobs:
           fi
           echo "$Z_AI_CONFIG" > .z-ai-config
           chmod 600 .z-ai-config
-          # Verify z-ai CLI works
-          ../node_modules/.bin/z-ai chat -p "ping" -o /tmp/zai_health.json || true
-          if [ -f /tmp/zai_health.json ]; then
-            echo "✅ z-ai CLI configured"
+          # Verify z-ai CLI works — uses `node` (not `bun` which is not pre-installed on GHA runner)
+          # z-ai SDK's shebang is `#!/usr/bin/env bun` but the JS itself runs under node >=20
+          node ../node_modules/z-ai-web-dev-sdk/dist/cli.js chat -p "ping" -o /tmp/zai_health.json || true
+          if [ -f /tmp/zai_health.json ] && grep -q '"choices"' /tmp/zai_health.json; then
+            echo "✅ z-ai CLI configured (via node)"
           else
             echo "⚠️ z-ai CLI test failed — will use demo mode"
+            cat /tmp/zai_health.json 2>/dev/null || true
           fi
 
       - name: Run daemon
