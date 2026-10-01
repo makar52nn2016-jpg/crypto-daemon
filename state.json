@@ -157,15 +157,8 @@
       "updated_at": "2026-09-30T04:32:40Z"
     },
     "ancore-org/ancore#1487": {
-      "merged": false,
-      "state": "open",
-      "mergeable": true,
-      "mergeable_state": "unstable",
-      "title": "feat(sdk): retry policy wrapper for AncoreClient (#1478)",
-      "review_state": null,
-      "review_by": null,
-      "ci_state": "success",
-      "updated_at": "2026-09-29T22:27:04Z"
+      "merged": true,
+      "state": "merged"
     },
     "StellarRoute/WaveFlow#71": {
       "merged": false,
