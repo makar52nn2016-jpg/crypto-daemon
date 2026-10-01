@@ -19,15 +19,13 @@
       "merged": true
     },
     "gear5labs/chenpilot-client#185": {
-      "merged": true,
-      "state": "merged"
+      "merged": true
     },
     "gear5labs/chenpilot-client#186": {
       "merged": true
     },
     "gear5labs/chenpilot-client#187": {
-      "merged": true,
-      "state": "merged"
+      "merged": true
     },
     "gear5labs/chenpilot-client#189": {
       "merged": true
@@ -118,8 +116,8 @@
     "dwebagents/AgentPipe#2120": {
       "merged": false,
       "state": "open",
-      "mergeable": null,
-      "mergeable_state": "unknown",
+      "mergeable": true,
+      "mergeable_state": "clean",
       "title": "feat(docs): contributors webpage with goose-people portraits (#1580)",
       "review_state": "DISMISSED",
       "review_by": "agentpipe-clerk[bot]",

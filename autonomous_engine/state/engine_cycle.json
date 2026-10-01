@@ -1,6 +1,6 @@
 {
-  "cycle_count": 7,
-  "last_cycle_at": "2026-10-01T17:21:40.113523+00:00",
+  "cycle_count": 8,
+  "last_cycle_at": "2026-10-01T21:09:15.172897+00:00",
   "last_fixer_swarm_at": "2026-10-01T11:07:36.472840+00:00",
   "last_llm_freeswitch_at": null,
   "total_merges_detected": 0,
@@ -376,6 +376,69 @@
       "at": "2026-10-01T17:21:43.400758+00:00",
       "agent": "sniper_bulk",
       "cycle": 7,
+      "result": {
+        "error": "Agent sniper_bulk crashed: 'scan_history'"
+      }
+    },
+    {
+      "at": "2026-10-01T21:09:15.447042+00:00",
+      "agent": "cost_guardian",
+      "cycle": 8,
+      "result": {
+        "success": true,
+        "result": {
+          "halt": false,
+          "reason": null,
+          "checks": [
+            {
+              "agent": "sniper_sponsorship",
+              "result": {
+                "status": "error",
+                "reason": "HTTP Error 403: Forbidden"
+              }
+            },
+            {
+              "agent": "sniper_self_paid",
+              "result": {
+                "status": "error",
+                "reason": "HTTP Error 403: Forbidden"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "at": "2026-10-01T21:09:16.731553+00:00",
+      "agent": "cooldown_timer",
+      "cycle": 8,
+      "result": {
+        "success": true,
+        "result": {
+          "action": "reclaim_blocked",
+          "result": {
+            "returncode": 1,
+            "stdout": "🤖 Re-claiming Frantic #136 as agent-b94b60\n\n============================================================\nStep 1: POST /v1/claims\n  HTTP 403\n  Response: {\n  \"ok\": false,\n  \"error\": \"claim_not_allowed\",\n  \"message\": \"This bounty allows at most 1 claims per operator.\"\n}\n\n❌ Claim failed: claim_not_allowed - This bounty allows at most 1 claims per operator.\n",
+            "stderr": ""
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-10-01T21:09:18.269554+00:00",
+      "agent": "merge_watcher",
+      "cycle": 8,
+      "result": {
+        "success": true,
+        "result": {
+          "actions": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-01T21:09:18.621639+00:00",
+      "agent": "sniper_bulk",
+      "cycle": 8,
       "result": {
         "error": "Agent sniper_bulk crashed: 'scan_history'"
       }

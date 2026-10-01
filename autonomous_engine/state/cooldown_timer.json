@@ -1,11 +1,11 @@
 {
-  "last_check_at": "2026-10-01T17:21:40.476556+00:00",
+  "last_check_at": "2026-10-01T21:09:15.449997+00:00",
   "claim_status": "reclaim_failed",
   "retry_after_seconds": 16206,
   "cooldown_ends_at": "2026-10-01T15:37:40.578496+00:00",
-  "reclaim_attempts": 4,
+  "reclaim_attempts": 5,
   "successful_reclaims": 0,
-  "failed_reclaims": 4,
+  "failed_reclaims": 5,
   "events": [
     {
       "at": "2026-10-01T08:46:06.386278+00:00",
@@ -27,6 +27,12 @@
     },
     {
       "at": "2026-10-01T17:21:41.395607+00:00",
+      "type": "RECLAIM_ATTEMPT",
+      "result": "failed",
+      "details": ""
+    },
+    {
+      "at": "2026-10-01T21:09:16.731091+00:00",
       "type": "RECLAIM_ATTEMPT",
       "result": "failed",
       "details": ""
