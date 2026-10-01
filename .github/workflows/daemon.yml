@@ -1,86 +1,48 @@
-name: Crypto Daemon + Sniper 24/7
+name: Hourly Autonomous Run
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # daemon + sniper every 5 min
+    - cron: '0 * * * *'
   workflow_dispatch: {}
   push:
     branches: [main]
 
-# CRITICAL: required for GITHUB_TOKEN to have write access — without this,
-# the daemon's state.json commits fail silently (was broken for 28h+).
 permissions:
   contents: write
 
-# Run only one workflow at a time — prevents race condition when daemon+sniper
-# both try to commit state.json simultaneously.
 concurrency:
-  group: daemon-sniper
+  group: hourly-autonomous
   cancel-in-progress: false
 
 jobs:
-  daemon-and-sniper:
+  hourly:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 1
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
       - name: Install deps
-        run: |
-          pip install requests
-          # Install z-ai CLI for FREE LLM backend (GLM-4-Plus)
-          npm install z-ai-web-dev-sdk --no-save
-
-      - name: Setup Z.ai config (for free LLM backend)
-        env:
-          Z_AI_CONFIG: ${{ secrets.Z_AI_CONFIG }}
-        working-directory: trudyagi
-        run: |
-          # z-ai CLI looks for .z-ai-config in cwd, home, or /etc
-          # Note: GHA hides secrets in `if:` conditions, so we always run this step
-          # and check inside via env var (which IS visible to bash).
-          if [ -z "$Z_AI_CONFIG" ]; then
-            echo "⚠️ Z_AI_CONFIG secret not set — will use demo mode for trudyagi"
-            exit 0
-          fi
-          echo "$Z_AI_CONFIG" > .z-ai-config
-          chmod 600 .z-ai-config
-          # Verify z-ai CLI works — uses `node` (not `bun` which is not pre-installed on GHA runner)
-          # z-ai SDK's shebang is `#!/usr/bin/env bun` but the JS itself runs under node >=20
-          node ../node_modules/z-ai-web-dev-sdk/dist/cli.js chat -p "ping" -o /tmp/zai_health.json || true
-          if [ -f /tmp/zai_health.json ] && grep -q '"choices"' /tmp/zai_health.json; then
-            echo "✅ z-ai CLI configured (via node)"
-          else
-            echo "⚠️ z-ai CLI test failed — will use demo mode"
-            cat /tmp/zai_health.json 2>/dev/null || true
-          fi
-
-      - name: Run daemon (legacy — wallet/PR monitoring)
+        run: pip install requests
+      - name: Run daemon
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
           TG_CHAT: ${{ secrets.TG_CHAT }}
         run: python daemon.py
-
-      - name: Run sniper (legacy — GitHub bounty discovery)
+      - name: Run sniper
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
           TG_CHAT: ${{ secrets.TG_CHAT }}
         run: python sniper.py
-
-      - name: Run Autonomous Profit Engine (cost_guardian + cooldown_timer + merge_watcher + sniper_bulk + fixer_swarm)
+      - name: Run Autonomous Engine
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -90,8 +52,7 @@ jobs:
           PIMLICO_API_KEY: ${{ secrets.PIMLICO_API_KEY }}
           LLM_BACKEND: ${{ secrets.LLM_BACKEND || 'zai' }}
         run: python autonomous_engine/engine.py
-
-      - name: Run Trudyagi pipeline (autonomous 4-role agent corporation)
+      - name: Run Hourly Autonomous Runner
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -99,40 +60,15 @@ jobs:
           TG_CHAT: ${{ secrets.TG_CHAT }}
           FRANTIC_AGENT_TOKEN: ${{ secrets.FRANTIC_AGENT_TOKEN }}
           PIMLICO_API_KEY: ${{ secrets.PIMLICO_API_KEY }}
-          # Z.ai free LLM backend — uses .z-ai-config file (set up in previous step)
-          LLM_BACKEND: zai
-          PATH: /usr/local/bin:/usr/bin:/bin:${{ github.workspace }}/node_modules/.bin
-        working-directory: trudyagi
-        run: |
-          # Real LLM mode (z-ai free GLM-4-Plus) if .z-ai-config is set up AND reachable.
-          # Falls back to demo mode (mock LLM) if config not present OR API unreachable.
-          # The internal-api.z.ai endpoint is IP-restricted — works locally but not from GHA runner.
-          if [ ! -f .z-ai-config ]; then
-            echo "🎭 Z.ai config not found — running in demo mode"
-            python trudyagi.py demo "Daily autonomous check — daemon alive + Frantic #136 claim status" || true
-            exit 0
-          fi
-          # Test z-ai API reachability from GHA runner
-          node ../node_modules/z-ai-web-dev-sdk/dist/cli.js chat -p "ping" -o /tmp/zai_reachable.json 2>/dev/null || true
-          if [ -f /tmp/zai_reachable.json ] && grep -q '"choices"' /tmp/zai_reachable.json; then
-            echo "🚀 z-ai API reachable — running with real GLM-4-Plus"
-            python trudyagi.py run "Daily autonomous check — daemon alive + Frantic #136 claim status + wallet balances" || true
-          else
-            echo "⚠️ z-ai API unreachable from GHA runner (internal-api.z.ai is IP-restricted)"
-            echo "🎭 Falling back to demo mode (mock LLM, real shell commands still execute)"
-            python trudyagi.py demo "Daily autonomous check — daemon alive + Frantic #136 claim status" || true
-          fi
-
+        run: python autonomous_engine/hourly_run.py
       - name: Commit state
         continue-on-error: true
         run: |
-          # Rebase on latest main to avoid "non-fast-forward" push failures
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git pull --rebase --no-edit origin main || true
           git add -A || true
-          git commit -m "daemon+sniper+trudyagi state update $(date -u +%FT%TZ)" || true
-          # Push using GITHUB_TOKEN (write access via permissions: contents: write)
+          git commit -m "hourly run $(date -u +%FT%TZ)" || true
           git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
