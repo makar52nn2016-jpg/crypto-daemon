@@ -3,6 +3,9 @@
 # Local env (contains secrets)
 .env
 
+# Z.ai config (contains JWT token — NEVER commit!)
+.z-ai-config
+
 # Per-task artifacts (regenerated on every run)
 # Keep the directory structure but ignore contents
 tasks/*

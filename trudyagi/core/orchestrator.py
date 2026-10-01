@@ -26,6 +26,7 @@ from typing import Optional
 from .state import TaskState, new_task_id, ROLE_ORDER
 from .llm_client import LLMClient, load_role_prompt
 from .demo_llm import DemoLLMClient
+from .zai_client import ZaiLLMClient
 from . import worklog
 
 
@@ -38,9 +39,34 @@ def _strip_yaml_fence(text: str) -> str:
 
 
 def _make_llm(demo: bool = False):
-    """Construct the appropriate LLM client."""
+    """Construct the appropriate LLM client.
+
+    Priority:
+      1. demo=True → DemoLLMClient (mock, no API key)
+      2. LLM_BACKEND env var:
+         - "zai"    → ZaiLLMClient (FREE — uses z-ai CLI)
+         - "openai" → LLMClient (OpenAI-compatible, requires LLM_API_KEY)
+      3. Default: try z-ai first (if z-ai CLI is installed), fall back to openai
+    """
     if demo:
         return DemoLLMClient()
+
+    backend = os.environ.get("LLM_BACKEND", "").lower()
+
+    if backend == "zai":
+        return ZaiLLMClient()
+    if backend == "openai":
+        return LLMClient()
+
+    # Auto-detect: prefer z-ai (free) if available
+    import shutil
+    if shutil.which("z-ai"):
+        try:
+            return ZaiLLMClient()
+        except RuntimeError:
+            pass
+
+    # Fall back to OpenAI-compatible (requires LLM_API_KEY)
     return LLMClient()
 
 

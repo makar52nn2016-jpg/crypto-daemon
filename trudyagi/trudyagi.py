@@ -27,19 +27,25 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from core import run_pipeline, list_all_tasks, LLMClient, DemoLLMClient  # noqa: E402
+from core import run_pipeline, list_all_tasks, LLMClient, DemoLLMClient, ZaiLLMClient  # noqa: E402
 from core import worklog as worklog_mod  # noqa: E402
 
 
-ENV_TEMPLATE = """# Trudyagi configuration — OpenAI-compatible LLM
-# Tested with: OpenAI, Anthropic via openai-compat, Z.ai GLM, Ollama
+ENV_TEMPLATE = """# Trudyagi configuration — LLM backend
+# Pick ONE backend by setting LLM_BACKEND
 
-# Required for `run` command (skip for `demo` mode)
-LLM_API_KEY=
-LLM_BASE_URL=https://api.openai.com/v1
-LLM_MODEL=gpt-4o-mini
+# === Option 1: Z.ai (FREE — recommended) ===
+# Uses z-ai CLI which reads /etc/.z-ai-config (already set up locally)
+# On GitHub Actions: install z-ai-web-dev-sdk npm package + create .z-ai-config from secret
+LLM_BACKEND=zai
 
-# Optional tuning
+# === Option 2: OpenAI-compatible (paid — OpenAI/Anthropic/Groq/Ollama) ===
+# LLM_BACKEND=openai
+# LLM_API_KEY=
+# LLM_BASE_URL=https://api.openai.com/v1
+# LLM_MODEL=gpt-4o-mini
+
+# Optional tuning (for openai backend)
 LLM_MAX_TOKENS=1500
 LLM_TEMPERATURE=0.3
 
@@ -163,9 +169,24 @@ def cmd_worklog(args):
 
 
 def cmd_health(args):
-    """Quick LLM health check."""
+    """Quick LLM health check — auto-detects backend."""
     _load_env()
     print("🔍 Health check...")
+
+    # Try Z.ai first (free, auto-detected)
+    try:
+        client = ZaiLLMClient()
+        print(f"  🆓 Trying Z.ai backend (free GLM-4-Plus)...")
+        if client.is_alive():
+            print(f"  ✅ Z.ai LLM alive — using free backend")
+            return 0
+        else:
+            print(f"  ⚠️ Z.ai CLI not responding")
+    except RuntimeError as e:
+        print(f"  ⚠️ Z.ai CLI not available: {e}")
+
+    # Fall back to OpenAI-compatible
+    print(f"  💸 Falling back to OpenAI-compatible backend...")
     try:
         client = LLMClient()
         if client.is_alive():
@@ -180,8 +201,9 @@ def cmd_health(args):
             print(f"     Check LLM_API_KEY in .env")
             return 1
     except ValueError as e:
-        print(f"  ❌ Config error: {e}")
-        print(f"     Run: python trudyagi.py init")
+        print(f"  ❌ No LLM backend available.")
+        print(f"     Install z-ai CLI: npm install -g z-ai-web-dev-sdk")
+        print(f"     OR set LLM_API_KEY in .env for OpenAI-compatible")
         return 1
 
 

@@ -32,8 +32,30 @@ jobs:
         with:
           python-version: '3.12'
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Install deps
-        run: pip install requests
+        run: |
+          pip install requests
+          # Install z-ai CLI for FREE LLM backend (GLM-4-Plus)
+          npm install z-ai-web-dev-sdk --no-save
+
+      - name: Setup Z.ai config (for free LLM backend)
+        if: ${{ secrets.Z_AI_CONFIG != '' }}
+        working-directory: trudyagi
+        run: |
+          # z-ai CLI looks for .z-ai-config in cwd, home, or /etc
+          echo '${{ secrets.Z_AI_CONFIG }}' > .z-ai-config
+          chmod 600 .z-ai-config
+          # Verify z-ai CLI works
+          ../node_modules/.bin/z-ai chat -p "ping" -o /tmp/zai_health.json || true
+          if [ -f /tmp/zai_health.json ]; then
+            echo "✅ z-ai CLI configured"
+          else
+            echo "⚠️ z-ai CLI not configured — will use demo mode"
+          fi
 
       - name: Run daemon
         env:
@@ -49,7 +71,7 @@ jobs:
           TG_CHAT: ${{ secrets.TG_CHAT }}
         run: python sniper.py
 
-      - name: Run Trudyagi pipeline (demo mode — autonomous 4-role agent corporation)
+      - name: Run Trudyagi pipeline (autonomous 4-role agent corporation)
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -57,14 +79,20 @@ jobs:
           TG_CHAT: ${{ secrets.TG_CHAT }}
           FRANTIC_AGENT_TOKEN: ${{ secrets.FRANTIC_AGENT_TOKEN }}
           PIMLICO_API_KEY: ${{ secrets.PIMLICO_API_KEY }}
-          # LLM_API_KEY, LLM_BASE_URL, LLM_MODEL — set when ready for real LLM mode
-          # Until then, runs in demo mode (mock LLM, no API calls)
+          # Z.ai free LLM backend — uses .z-ai-config file (set up in previous step)
+          LLM_BACKEND: zai
+          PATH: /usr/local/bin:/usr/bin:/bin:${{ github.workspace }}/node_modules/.bin
         working-directory: trudyagi
         run: |
-          # Demo mode runs the full 4-role pipeline with mock LLM
-          # to prove the system is alive and artifact-saving works.
-          # Switch to `python trudyagi.py run "<goal>"` when LLM_API_KEY is set.
-          python trudyagi.py demo "Daily autonomous check — daemon alive + bounties available + Frantic claim status" || true
+          # Real LLM mode (z-ai free GLM-4-Plus) if .z-ai-config is set up.
+          # Falls back to demo mode (mock LLM) if config not present.
+          if [ -f .z-ai-config ]; then
+            echo "🚀 Running with Z.ai GLM-4-Plus (free LLM backend)"
+            python trudyagi.py run "Daily autonomous check — daemon alive + Frantic #136 claim status + wallet balances" || true
+          else
+            echo "🎭 Z.ai config not found — running in demo mode"
+            python trudyagi.py demo "Daily autonomous check — daemon alive + Frantic #136 claim status" || true
+          fi
 
       - name: Commit state
         continue-on-error: true
