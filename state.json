@@ -7,8 +7,8 @@
     "Heliobond/frontend#676": {
       "merged": false,
       "state": "open",
-      "mergeable": null,
-      "mergeable_state": "unknown",
+      "mergeable": false,
+      "mergeable_state": "dirty",
       "title": "fix: registry decoder matches ProjectRegistry contract fields (#626)",
       "review_state": "APPROVED",
       "review_by": "sshdopey",
@@ -16,8 +16,7 @@
       "updated_at": "2026-09-30T16:50:23Z"
     },
     "soroban-forge-labs/soroban-forge#488": {
-      "merged": true,
-      "state": "merged"
+      "merged": true
     },
     "gear5labs/chenpilot-client#185": {
       "merged": false,
@@ -66,8 +65,8 @@
     "StellarCanary/ProtocolCanary-Action#306": {
       "merged": false,
       "state": "open",
-      "mergeable": null,
-      "mergeable_state": "unknown",
+      "mergeable": false,
+      "mergeable_state": "dirty",
       "title": "test: cover signal-kill and writeSummary-throws branches in main.ts run() (#271)",
       "review_state": null,
       "review_by": null,
