@@ -179,7 +179,7 @@
       "updated_at": "2026-09-30T05:21:29Z"
     }
   },
-  "last_heartbeat": 1790800530.737591,
+  "last_heartbeat": 1790828994.7304323,
   "last_comment_seen": {
     "Heliobond/frontend#676": 5915738141,
     "soroban-forge-labs/soroban-forge#488": 5904647289,
@@ -209,9 +209,20 @@
     "StellarRoute/WaveFlow#71": 5904644475
   },
   "seen_bounties": {},
-  "pinged_prs": {},
-  "last_discovery": 1790800519.718354,
+  "pinged_prs": {
+    "Heliobond/frontend#676": 1790828955.511049
+  },
+  "last_discovery": 1790828984.636527,
   "last_top_bounties": [
+    {
+      "repo": "Inferara/soroban-security-portal",
+      "num": 248,
+      "title": "On the admin pages after approving a vulnerability or report, the table sizing r",
+      "app_count": 0,
+      "created": "2026-10-01",
+      "labels": [],
+      "url": "https://github.com/Inferara/soroban-security-portal/issues/248"
+    },
     {
       "repo": "ChainLearnOfficial/chainlearn-contracts",
       "num": 495,
@@ -264,19 +275,6 @@
         "low"
       ],
       "url": "https://github.com/ChainLearnOfficial/chainlearn-contracts/issues/494"
-    },
-    {
-      "repo": "ChainLearnOfficial/chainlearn-contracts",
-      "num": 502,
-      "title": "batch_claim_reward does not append claim records to history -- get_claim_history",
-      "app_count": 8,
-      "created": "2026-09-30",
-      "labels": [
-        "bug",
-        "rust",
-        "medium"
-      ],
-      "url": "https://github.com/ChainLearnOfficial/chainlearn-contracts/issues/502"
     }
   ],
   "prev_ton": 0.104125546,
