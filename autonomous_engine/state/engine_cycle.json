@@ -1,6 +1,6 @@
 {
-  "cycle_count": 4,
-  "last_cycle_at": "2026-10-01T08:46:05.208570+00:00",
+  "cycle_count": 5,
+  "last_cycle_at": "2026-10-01T10:36:17.237844+00:00",
   "last_fixer_swarm_at": "2026-10-01T08:43:41.595582+00:00",
   "last_llm_freeswitch_at": null,
   "total_merges_detected": 0,
@@ -177,6 +177,69 @@
           "queue_size": 0,
           "candidates_preview": []
         }
+      }
+    },
+    {
+      "at": "2026-10-01T10:36:17.442857+00:00",
+      "agent": "cost_guardian",
+      "cycle": 5,
+      "result": {
+        "success": true,
+        "result": {
+          "halt": false,
+          "reason": null,
+          "checks": [
+            {
+              "agent": "sniper_sponsorship",
+              "result": {
+                "status": "error",
+                "reason": "HTTP Error 403: Forbidden"
+              }
+            },
+            {
+              "agent": "sniper_self_paid",
+              "result": {
+                "status": "error",
+                "reason": "HTTP Error 403: Forbidden"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "at": "2026-10-01T10:36:18.427446+00:00",
+      "agent": "cooldown_timer",
+      "cycle": 5,
+      "result": {
+        "success": true,
+        "result": {
+          "action": "reclaim_blocked",
+          "result": {
+            "returncode": 1,
+            "stdout": "🤖 Re-claiming Frantic #136 as agent-b94b60\n\n============================================================\nStep 1: POST /v1/claims\n  HTTP 409\n  Response: {\n  \"ok\": false,\n  \"error\": \"cooldown_active\",\n  \"message\": \"claim fuse expired\",\n  \"retry_after_seconds\": 18082\n}\n\n❌ Claim failed: cooldown_active - claim fuse expired\n",
+            "stderr": ""
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-10-01T10:36:20.331018+00:00",
+      "agent": "merge_watcher",
+      "cycle": 5,
+      "result": {
+        "success": true,
+        "result": {
+          "actions": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-01T10:36:20.675930+00:00",
+      "agent": "sniper_bulk",
+      "cycle": 5,
+      "result": {
+        "error": "Agent sniper_bulk crashed: 'scan_history'"
       }
     }
   ]

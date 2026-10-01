@@ -1,17 +1,36 @@
 {
-  "last_check_at": "2026-10-01T08:46:05.571989+00:00",
+  "last_check_at": "2026-10-01T10:36:17.444650+00:00",
   "claim_status": "cooldown_active",
-  "retry_after_seconds": null,
-  "cooldown_ends_at": "2026-10-01T15:37:40.386548+00:00",
-  "reclaim_attempts": 1,
+  "retry_after_seconds": 18082,
+  "cooldown_ends_at": "2026-10-01T15:37:40.427001+00:00",
+  "reclaim_attempts": 2,
   "successful_reclaims": 0,
-  "failed_reclaims": 1,
+  "failed_reclaims": 2,
   "events": [
     {
       "at": "2026-10-01T08:46:06.386278+00:00",
       "type": "RECLAIM_ATTEMPT",
       "result": "failed",
       "details": ""
+    },
+    {
+      "at": "2026-10-01T10:36:18.426851+00:00",
+      "type": "RECLAIM_ATTEMPT",
+      "result": "failed",
+      "details": ""
     }
-  ]
+  ],
+  "precomputed_payload": {
+    "bounty": 136,
+    "agent_kid": "agent-b94b60",
+    "agent_token_env": "FRANTIC_AGENT_TOKEN",
+    "artifacts": [
+      "pr_url=https://github.com/auscaster/stompstart-startup-list/pull/9",
+      "website_url=https://agentbounties.app/",
+      "logo_url=https://raw.githubusercontent.com/makar52nn2016-jpg/stompstart-startup-list/4194a510647443a74654e1aa34acc4eb16be0b76/startups/agentbounties/logo.png",
+      "product_url=https://raw.githubusercontent.com/makar52nn2016-jpg/stompstart-startup-list/4194a510647443a74654e1aa34acc4eb16be0b76/startups/agentbounties/product.png"
+    ],
+    "reclaim_script_path": "/home/runner/work/crypto-daemon/crypto-daemon/trudyagi/reclaim_136.py",
+    "ready_to_fire": true
+  }
 }
