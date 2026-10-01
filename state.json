@@ -7,41 +7,27 @@
     "Heliobond/frontend#676": {
       "merged": false,
       "state": "open",
-      "mergeable": false,
-      "mergeable_state": "dirty",
+      "mergeable": true,
+      "mergeable_state": "unstable",
       "title": "fix: registry decoder matches ProjectRegistry contract fields (#626)",
       "review_state": "APPROVED",
       "review_by": "sshdopey",
       "ci_state": "failure",
-      "updated_at": "2026-09-30T16:50:23Z"
+      "updated_at": "2026-10-01T11:20:23Z"
     },
     "soroban-forge-labs/soroban-forge#488": {
       "merged": true
     },
     "gear5labs/chenpilot-client#185": {
-      "merged": false,
-      "state": "open",
-      "mergeable": true,
-      "mergeable_state": "unstable",
-      "title": "chore: remove committed tsc_output.txt artifact (#135)",
-      "review_state": null,
-      "review_by": null,
-      "ci_state": "failure",
-      "updated_at": "2026-09-30T05:25:52Z"
+      "merged": true,
+      "state": "merged"
     },
     "gear5labs/chenpilot-client#186": {
       "merged": true
     },
     "gear5labs/chenpilot-client#187": {
-      "merged": false,
-      "state": "open",
-      "mergeable": true,
-      "mergeable_state": "unstable",
-      "title": "test: add unit tests for format and validation utilities (#141)",
-      "review_state": null,
-      "review_by": null,
-      "ci_state": "failure",
-      "updated_at": "2026-09-30T05:28:07Z"
+      "merged": true,
+      "state": "merged"
     },
     "gear5labs/chenpilot-client#189": {
       "merged": true
@@ -49,8 +35,8 @@
     "StellarCanary/ProtocolCanary-Action#306": {
       "merged": false,
       "state": "open",
-      "mergeable": null,
-      "mergeable_state": "unknown",
+      "mergeable": false,
+      "mergeable_state": "dirty",
       "title": "test: cover signal-kill and writeSummary-throws branches in main.ts run() (#271)",
       "review_state": null,
       "review_by": null,
@@ -132,8 +118,8 @@
     "dwebagents/AgentPipe#2120": {
       "merged": false,
       "state": "open",
-      "mergeable": true,
-      "mergeable_state": "clean",
+      "mergeable": null,
+      "mergeable_state": "unknown",
       "title": "feat(docs): contributors webpage with goose-people portraits (#1580)",
       "review_state": "DISMISSED",
       "review_by": "agentpipe-clerk[bot]",
@@ -155,9 +141,9 @@
       "updated_at": "2026-09-30T05:21:29Z"
     }
   },
-  "last_heartbeat": 1790850971.8289523,
+  "last_heartbeat": 1790875294.6658244,
   "last_comment_seen": {
-    "Heliobond/frontend#676": 5915738141,
+    "Heliobond/frontend#676": 5930261427,
     "soroban-forge-labs/soroban-forge#488": 5904647289,
     "gear5labs/chenpilot-client#185": 5904686897,
     "gear5labs/chenpilot-client#186": 5904698684,
@@ -188,69 +174,68 @@
   "pinged_prs": {
     "Heliobond/frontend#676": 1790828955.511049
   },
-  "last_discovery": 1790850960.879753,
+  "last_discovery": 1790875284.7004128,
   "last_top_bounties": [
     {
-      "repo": "Inferara/soroban-security-portal",
-      "num": 248,
-      "title": "On the admin pages after approving a vulnerability or report, the table sizing r",
+      "repo": "Deyanju23/stellar-stream-contract",
+      "num": 6,
+      "title": "feat(stream): expose per-address stream index",
       "app_count": 0,
       "created": "2026-10-01",
-      "labels": [],
-      "url": "https://github.com/Inferara/soroban-security-portal/issues/248"
+      "labels": [
+        "complexity: high"
+      ],
+      "url": "https://github.com/Deyanju23/stellar-stream-contract/issues/6"
     },
     {
-      "repo": "ChainLearnOfficial/chainlearn-contracts",
-      "num": 495,
-      "title": "No authorization tests for progress-tracker admin functions (create_course, arch",
-      "app_count": 5,
-      "created": "2026-09-30",
+      "repo": "Deyanju23/stellar-stream-contract",
+      "num": 5,
+      "title": "feat(stream): add withdraw_all convenience function",
+      "app_count": 0,
+      "created": "2026-10-01",
       "labels": [
-        "tests",
-        "rust",
-        "medium"
+        "complexity: mid"
       ],
-      "url": "https://github.com/ChainLearnOfficial/chainlearn-contracts/issues/495"
+      "url": "https://github.com/Deyanju23/stellar-stream-contract/issues/5"
     },
     {
-      "repo": "ChainLearnOfficial/chainlearn-contracts",
-      "num": 492,
-      "title": "revoke_delegation is blocked during pause, preventing learners from revoking mal",
-      "app_count": 5,
-      "created": "2026-09-30",
+      "repo": "Deyanju23/stellar-stream-contract",
+      "num": 4,
+      "title": "docs(contracts): reconcile README and spec after changes",
+      "app_count": 0,
+      "created": "2026-10-01",
       "labels": [
-        "bug",
-        "rust",
-        "security",
-        "medium"
+        "good first issue",
+        "complexity: low",
+        "type: docs"
       ],
-      "url": "https://github.com/ChainLearnOfficial/chainlearn-contracts/issues/492"
+      "url": "https://github.com/Deyanju23/stellar-stream-contract/issues/4"
     },
     {
-      "repo": "ChainLearnOfficial/chainlearn-contracts",
-      "num": 491,
-      "title": "enroll_checked is pub and bypasses require_not_paused, allowing enrollment durin",
-      "app_count": 5,
-      "created": "2026-09-30",
+      "repo": "Deyanju23/stellar-stream-contract",
+      "num": 3,
+      "title": "ci(contracts): attach wasm artifact to tagged releases",
+      "app_count": 0,
+      "created": "2026-10-01",
       "labels": [
-        "bug",
-        "rust",
-        "medium"
+        "good first issue",
+        "complexity: low",
+        "type: ci"
       ],
-      "url": "https://github.com/ChainLearnOfficial/chainlearn-contracts/issues/491"
+      "url": "https://github.com/Deyanju23/stellar-stream-contract/issues/3"
     },
     {
-      "repo": "ChainLearnOfficial/chainlearn-contracts",
-      "num": 494,
-      "title": "Gas benchmark assertions are trivially true (assert!(cost > 0)) -- no regression",
-      "app_count": 6,
-      "created": "2026-09-30",
+      "repo": "Deyanju23/stellar-stream-contract",
+      "num": 2,
+      "title": "test(stream): assert emitted events",
+      "app_count": 0,
+      "created": "2026-10-01",
       "labels": [
-        "tests",
-        "rust",
-        "low"
+        "good first issue",
+        "complexity: low",
+        "type: test"
       ],
-      "url": "https://github.com/ChainLearnOfficial/chainlearn-contracts/issues/494"
+      "url": "https://github.com/Deyanju23/stellar-stream-contract/issues/2"
     }
   ],
   "prev_ton": 0.104125546,
