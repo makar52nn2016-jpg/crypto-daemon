@@ -131,3 +131,24 @@
 - [ ] Double-check YAML schemas before pushing
 - [ ] Verify URLs are on own domains (not vercel.app)
 - [ ] Verify image sizes (logo 256+, product 1200+)
+
+## Lesson 17: YAML values with colons must be quoted
+- **What:** Stompstart's validate script failed because `locator:` field value contained `protocol.json records deployment_block: 48496662` — YAML parser interpreted the colon as nested mapping
+- **Error message:** "Nested mappings are not allowed in compact mappings at line 76, column 14"
+- **Fix:** Always wrap YAML values containing colons in double quotes: `locator: "value with: colon"`
+- **Always verify:** After any YAML change, run `python3 -c "import yaml; yaml.safe_load(open('file.yaml'))"` locally before pushing
+- **Pattern:** If any YAML field value contains `: `, `#`, `{{`, or starts with `-`, quote it
+
+## Lesson 18: stellar-bounty-board (ritik4ever) merges PRs within minutes
+- **What:** ritik4ever/stellar-bounty-board maintainer is extremely fast at merging good-first-issue PRs
+- **Track record (Oct 1, 2026):** 5 PRs merged in ~2 hours (#1577, #1578, #1579, #1580, #1581)
+- **Strategy:** Always verify file matches actual source code before submitting — look for REAL drift, not cosmetic changes
+- **Best task types:** "verify X matches current behaviour", "confirm X settings", "document why X differs"
+- **Bad task types:** Complex feature work, refactoring, security fixes (require deep codebase knowledge)
+- **Always:** Claim issue with comment BEFORE starting work (prevents duplicate work)
+
+## Lesson 19: Re-check ALL open PRs for new comments every 30 min
+- Maintainers respond asynchronously — they may comment or merge hours after your push
+- Re-check comments on ALL open PRs periodically (not just the latest one)
+- GitHub API `?sort=created&direction=desc&per_page=100` gets all comments newest first
+- If CI shows `ms=unstable` → CI is running; if `ms=dirty` → merge conflict; if `ms=clean` → ready to merge
