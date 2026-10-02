@@ -116,8 +116,8 @@
     "dwebagents/AgentPipe#2120": {
       "merged": false,
       "state": "open",
-      "mergeable": null,
-      "mergeable_state": "unknown",
+      "mergeable": true,
+      "mergeable_state": "clean",
       "title": "feat(docs): contributors webpage with goose-people portraits (#1580)",
       "review_state": "DISMISSED",
       "review_by": "agentpipe-clerk[bot]",
@@ -139,7 +139,7 @@
       "updated_at": "2026-09-30T05:21:29Z"
     }
   },
-  "last_heartbeat": 1790950786.8035367,
+  "last_heartbeat": 1790983578.644452,
   "last_comment_seen": {
     "Heliobond/frontend#676": 5930261427,
     "soroban-forge-labs/soroban-forge#488": 5904647289,
@@ -172,68 +172,72 @@
   "pinged_prs": {
     "Heliobond/frontend#676": 1790927101.300094
   },
-  "last_discovery": 1790950775.6717644,
+  "last_discovery": 1790983572.4310374,
   "last_top_bounties": [
     {
-      "repo": "Deyanju23/stellar-stream-contract",
-      "num": 6,
-      "title": "feat(stream): expose per-address stream index",
+      "repo": "Meet-hybrid/soroban-forge",
+      "num": 349,
+      "title": "docs(contracts): generate synchronized API, lifecycle, event, and limitation ref",
       "app_count": 0,
-      "created": "2026-10-01",
+      "created": "2026-10-02",
       "labels": [
-        "complexity: high"
+        "documentation",
+        "complexity: high",
+        "external-contributors"
       ],
-      "url": "https://github.com/Deyanju23/stellar-stream-contract/issues/6"
+      "url": "https://github.com/Meet-hybrid/soroban-forge/issues/349"
     },
     {
-      "repo": "Deyanju23/stellar-stream-contract",
-      "num": 5,
-      "title": "feat(stream): add withdraw_all convenience function",
+      "repo": "Meet-hybrid/soroban-forge",
+      "num": 348,
+      "title": "perf(workspace): add contract footprint and ledger-cost regression reports",
       "app_count": 0,
-      "created": "2026-10-01",
+      "created": "2026-10-02",
       "labels": [
-        "complexity: mid"
+        "complexity: high",
+        "chore",
+        "external-contributors"
       ],
-      "url": "https://github.com/Deyanju23/stellar-stream-contract/issues/5"
+      "url": "https://github.com/Meet-hybrid/soroban-forge/issues/348"
     },
     {
-      "repo": "Deyanju23/stellar-stream-contract",
-      "num": 4,
-      "title": "docs(contracts): reconcile README and spec after changes",
+      "repo": "Meet-hybrid/soroban-forge",
+      "num": 347,
+      "title": "test(test-utils): add deterministic failure-injection fixtures for SEP-41 and cr",
       "app_count": 0,
-      "created": "2026-10-01",
+      "created": "2026-10-02",
       "labels": [
-        "good first issue",
-        "complexity: low",
-        "type: docs"
+        "complexity: high",
+        "test",
+        "external-contributors"
       ],
-      "url": "https://github.com/Deyanju23/stellar-stream-contract/issues/4"
+      "url": "https://github.com/Meet-hybrid/soroban-forge/issues/347"
     },
     {
-      "repo": "Deyanju23/stellar-stream-contract",
-      "num": 3,
-      "title": "ci(contracts): attach wasm artifact to tagged releases",
+      "repo": "Meet-hybrid/soroban-forge",
+      "num": 346,
+      "title": "feat(storage): add a contract schema registry and migration checklist generator",
       "app_count": 0,
-      "created": "2026-10-01",
+      "created": "2026-10-02",
       "labels": [
-        "good first issue",
-        "complexity: low",
-        "type: ci"
+        "enhancement",
+        "complexity: high",
+        "external-contributors"
       ],
-      "url": "https://github.com/Deyanju23/stellar-stream-contract/issues/3"
+      "url": "https://github.com/Meet-hybrid/soroban-forge/issues/346"
     },
     {
-      "repo": "Deyanju23/stellar-stream-contract",
-      "num": 2,
-      "title": "test(stream): assert emitted events",
+      "repo": "Meet-hybrid/soroban-forge",
+      "num": 345,
+      "title": "feat(cli): add offline transaction-plan generation for repeatable contract workf",
       "app_count": 0,
-      "created": "2026-10-01",
+      "created": "2026-10-02",
       "labels": [
-        "good first issue",
-        "complexity: low",
-        "type: test"
+        "enhancement",
+        "complexity: high",
+        "external-contributors"
       ],
-      "url": "https://github.com/Deyanju23/stellar-stream-contract/issues/2"
+      "url": "https://github.com/Meet-hybrid/soroban-forge/issues/345"
     }
   ],
   "prev_ton": 0.104125546,
