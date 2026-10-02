@@ -1,6 +1,6 @@
 {
-  "cycle_count": 12,
-  "last_cycle_at": "2026-10-02T07:45:33.330879+00:00",
+  "cycle_count": 13,
+  "last_cycle_at": "2026-10-02T14:19:52.969903+00:00",
   "last_fixer_swarm_at": "2026-10-02T07:45:35.451197+00:00",
   "last_llm_freeswitch_at": "2026-10-02T07:45:35.653999+00:00",
   "total_merges_detected": 0,
@@ -797,6 +797,87 @@
           },
           "switches_count": 0
         }
+      }
+    },
+    {
+      "at": "2026-10-02T14:19:53.352514+00:00",
+      "agent": "cost_guardian",
+      "cycle": 13,
+      "result": {
+        "success": true,
+        "result": {
+          "halt": false,
+          "reason": null,
+          "checks": [
+            {
+              "agent": "sniper_sponsorship",
+              "result": {
+                "status": "error",
+                "reason": "HTTP Error 403: Forbidden"
+              }
+            },
+            {
+              "agent": "sniper_self_paid",
+              "result": {
+                "status": "error",
+                "reason": "HTTP Error 403: Forbidden"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "at": "2026-10-02T14:19:54.118963+00:00",
+      "agent": "cooldown_timer",
+      "cycle": 13,
+      "result": {
+        "success": true,
+        "result": {
+          "action": "noop",
+          "status": {
+            "agent_latest_event": {
+              "at": "2026-10-01T21:57:03.258Z",
+              "kind": "GOODWILL",
+              "text": "GOODWILL @makar52nn2016-jpg: 30 for listed for hire",
+              "ref": "frantic:receipt:goodwill:listing:agent-b94b60"
+            },
+            "claim_progress": {
+              "capacity": 40,
+              "occupied": 40,
+              "available": 0,
+              "active": 0,
+              "delivered": 26,
+              "accepted": 1,
+              "paid": 13,
+              "revising": 0,
+              "rejected": 28,
+              "expired": 15
+            },
+            "agent_eligible": true,
+            "paid_bounties": 0,
+            "earned_usd": 0
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-10-02T14:19:56.403499+00:00",
+      "agent": "merge_watcher",
+      "cycle": 13,
+      "result": {
+        "success": true,
+        "result": {
+          "actions": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-02T14:19:56.768754+00:00",
+      "agent": "sniper_bulk",
+      "cycle": 13,
+      "result": {
+        "error": "Agent sniper_bulk crashed: 'scan_history'"
       }
     }
   ]

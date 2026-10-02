@@ -1,12 +1,12 @@
 {
   "prev_w": {
-    "XLM": 9.8081229,
+    "XLM": 1.02198,
     "TON": 0.104125546
   },
   "prev_c": {
     "auscaster/stompstart-startup-list#21": "2026-09-30T13:49:31Z",
     "auscaster/stompstart-startup-list#22": "2026-09-30T13:49:35Z"
   },
-  "runs": 3,
-  "last_run": "2026-10-02T07:45:35.753689+00:00"
+  "runs": 4,
+  "last_run": "2026-10-02T14:19:56.871535+00:00"
 }

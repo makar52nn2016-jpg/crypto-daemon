@@ -1,5 +1,5 @@
 {
-  "prev_xlm": 9.8081229,
+  "prev_xlm": 1.02198,
   "prev_eth": 0.0,
   "prev_btc": 0.0,
   "prev_sol": 0.0,
@@ -39,7 +39,7 @@
       "review_state": null,
       "review_by": null,
       "ci_state": "pending",
-      "updated_at": "2026-10-02T03:20:59Z"
+      "updated_at": "2026-10-02T11:00:50Z"
     },
     "StellarCanary/ProtocolCanary-Fixtures#241": {
       "merged": false,
@@ -139,7 +139,7 @@
       "updated_at": "2026-09-30T05:21:29Z"
     }
   },
-  "last_heartbeat": 1790906049.8300445,
+  "last_heartbeat": 1790950786.8035367,
   "last_comment_seen": {
     "Heliobond/frontend#676": 5930261427,
     "soroban-forge-labs/soroban-forge#488": 5904647289,
@@ -172,7 +172,7 @@
   "pinged_prs": {
     "Heliobond/frontend#676": 1790927101.300094
   },
-  "last_discovery": 1790906037.411828,
+  "last_discovery": 1790950775.6717644,
   "last_top_bounties": [
     {
       "repo": "Deyanju23/stellar-stream-contract",

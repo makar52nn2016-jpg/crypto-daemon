@@ -1,6 +1,6 @@
 {
-  "last_check_at": "2026-10-02T07:45:33.598322+00:00",
-  "claim_status": "active",
+  "last_check_at": "2026-10-02T14:19:53.355512+00:00",
+  "claim_status": "unknown",
   "retry_after_seconds": 16206,
   "cooldown_ends_at": null,
   "reclaim_attempts": 6,
