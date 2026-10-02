@@ -39,7 +39,7 @@
       "review_state": null,
       "review_by": null,
       "ci_state": "pending",
-      "updated_at": "2026-09-30T05:29:38Z"
+      "updated_at": "2026-10-02T03:20:59Z"
     },
     "StellarCanary/ProtocolCanary-Fixtures#241": {
       "merged": false,
@@ -147,7 +147,7 @@
     "gear5labs/chenpilot-client#186": 5904698684,
     "gear5labs/chenpilot-client#187": 5904712412,
     "gear5labs/chenpilot-client#189": 5904960360,
-    "StellarCanary/ProtocolCanary-Action#306": 5904736535,
+    "StellarCanary/ProtocolCanary-Action#306": 5945009221,
     "StellarCanary/ProtocolCanary-Fixtures#241": 5904986057,
     "StellarCanary/ProtocolCanary-Fixtures#242": 5904997129,
     "Soroban-Cookbook/Soroban_Cookbook_online#1006": 5903998909,
@@ -170,7 +170,7 @@
   },
   "seen_bounties": {},
   "pinged_prs": {
-    "Heliobond/frontend#676": 1790828955.511049
+    "Heliobond/frontend#676": 1790927101.300094
   },
   "last_discovery": 1790906037.411828,
   "last_top_bounties": [

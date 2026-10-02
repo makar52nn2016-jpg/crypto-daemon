@@ -1,0 +1,19 @@
+{
+  "last_check_at": "2026-10-02T07:45:35.452622+00:00",
+  "current_backend": null,
+  "backends_health": {
+    "zai": {
+      "available": false,
+      "error": "node:internal/modules/cjs/loader:1433\n  throw err;\n  ^\n\nError: Cannot find module '/home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/cli.js'\n    at Function._resolveFilename (node:internal/modules"
+    },
+    "ollama": {
+      "available": false,
+      "error": "ollama not installed"
+    },
+    "groq": {
+      "available": false,
+      "error": "GROQ_API_KEY not set"
+    }
+  },
+  "switches": 0
+}
