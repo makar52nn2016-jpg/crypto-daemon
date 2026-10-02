@@ -39,7 +39,7 @@
       "review_state": null,
       "review_by": null,
       "ci_state": "pending",
-      "updated_at": "2026-10-02T11:00:50Z"
+      "updated_at": "2026-10-02T16:00:51Z"
     },
     "StellarCanary/ProtocolCanary-Fixtures#241": {
       "merged": false,
@@ -116,8 +116,8 @@
     "dwebagents/AgentPipe#2120": {
       "merged": false,
       "state": "open",
-      "mergeable": true,
-      "mergeable_state": "clean",
+      "mergeable": null,
+      "mergeable_state": "unknown",
       "title": "feat(docs): contributors webpage with goose-people portraits (#1580)",
       "review_state": "DISMISSED",
       "review_by": "agentpipe-clerk[bot]",
