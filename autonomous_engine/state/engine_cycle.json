@@ -1,6 +1,6 @@
 {
-  "cycle_count": 15,
-  "last_cycle_at": "2026-10-02T23:26:24.521326+00:00",
+  "cycle_count": 16,
+  "last_cycle_at": "2026-10-03T02:59:43.294915+00:00",
   "last_fixer_swarm_at": "2026-10-02T23:26:27.155983+00:00",
   "last_llm_freeswitch_at": "2026-10-02T07:45:35.653999+00:00",
   "total_merges_detected": 0,
@@ -1052,6 +1052,87 @@
           "status": "no_llm",
           "queue_size": 0
         }
+      }
+    },
+    {
+      "at": "2026-10-03T02:59:43.682450+00:00",
+      "agent": "cost_guardian",
+      "cycle": 16,
+      "result": {
+        "success": true,
+        "result": {
+          "halt": false,
+          "reason": null,
+          "checks": [
+            {
+              "agent": "sniper_sponsorship",
+              "result": {
+                "status": "error",
+                "reason": "HTTP Error 403: Forbidden"
+              }
+            },
+            {
+              "agent": "sniper_self_paid",
+              "result": {
+                "status": "error",
+                "reason": "HTTP Error 403: Forbidden"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "at": "2026-10-03T02:59:44.069469+00:00",
+      "agent": "cooldown_timer",
+      "cycle": 16,
+      "result": {
+        "success": true,
+        "result": {
+          "action": "wait_active_claim",
+          "status": {
+            "agent_latest_event": {
+              "at": "2026-10-02T21:52:05.110Z",
+              "kind": "REJECTED",
+              "text": "#130 · returned, reason sealed",
+              "ref": "auto-review:a7af51f9-aa99-47df-a4b1-83c8cd71821a:delivery:ledger:20861:delivered-at:2026-10-02T21:50:44.364Z:frantic:review:a7af51f9-aa99-47df-a4b1-83c8cd71821a:revision"
+            },
+            "claim_progress": {
+              "capacity": 40,
+              "occupied": 40,
+              "available": 0,
+              "active": 1,
+              "delivered": 25,
+              "accepted": 1,
+              "paid": 13,
+              "revising": 0,
+              "rejected": 28,
+              "expired": 16
+            },
+            "agent_eligible": true,
+            "paid_bounties": 0,
+            "earned_usd": 0
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-10-03T02:59:45.646817+00:00",
+      "agent": "merge_watcher",
+      "cycle": 16,
+      "result": {
+        "success": true,
+        "result": {
+          "actions": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-03T02:59:45.847303+00:00",
+      "agent": "sniper_bulk",
+      "cycle": 16,
+      "result": {
+        "error": "Agent sniper_bulk crashed: 'scan_history'"
       }
     }
   ]
