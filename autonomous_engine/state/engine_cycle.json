@@ -1,7 +1,7 @@
 {
-  "cycle_count": 17,
-  "last_cycle_at": "2026-10-03T08:57:08.234116+00:00",
-  "last_fixer_swarm_at": "2026-10-02T23:26:27.155983+00:00",
+  "cycle_count": 18,
+  "last_cycle_at": "2026-10-03T14:08:51.845814+00:00",
+  "last_fixer_swarm_at": "2026-10-03T14:08:55.335818+00:00",
   "last_llm_freeswitch_at": "2026-10-02T07:45:35.653999+00:00",
   "total_merges_detected": 0,
   "total_reclaims_attempted": 0,
@@ -1214,6 +1214,99 @@
       "cycle": 17,
       "result": {
         "error": "Agent sniper_bulk crashed: 'scan_history'"
+      }
+    },
+    {
+      "at": "2026-10-03T14:08:52.152227+00:00",
+      "agent": "cost_guardian",
+      "cycle": 18,
+      "result": {
+        "success": true,
+        "result": {
+          "halt": false,
+          "reason": null,
+          "checks": [
+            {
+              "agent": "sniper_sponsorship",
+              "result": {
+                "status": "error",
+                "reason": "HTTP Error 403: Forbidden"
+              }
+            },
+            {
+              "agent": "sniper_self_paid",
+              "result": {
+                "status": "error",
+                "reason": "HTTP Error 403: Forbidden"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "at": "2026-10-03T14:08:52.630931+00:00",
+      "agent": "cooldown_timer",
+      "cycle": 18,
+      "result": {
+        "success": true,
+        "result": {
+          "action": "noop",
+          "status": {
+            "agent_latest_event": {
+              "at": "2026-10-03T07:14:55.715Z",
+              "kind": "DELIVERED",
+              "text": "#129 · sealed delivery",
+              "ref": "frantic:delivery:0e06752c-2e6c-4487-968d-22eba961b338"
+            },
+            "claim_progress": {
+              "capacity": 40,
+              "occupied": 40,
+              "available": 0,
+              "active": 0,
+              "delivered": 26,
+              "accepted": 1,
+              "paid": 13,
+              "revising": 0,
+              "rejected": 29,
+              "expired": 17
+            },
+            "agent_eligible": true,
+            "paid_bounties": 0,
+            "earned_usd": 0
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-10-03T14:08:54.850709+00:00",
+      "agent": "merge_watcher",
+      "cycle": 18,
+      "result": {
+        "success": true,
+        "result": {
+          "actions": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-03T14:08:55.332580+00:00",
+      "agent": "sniper_bulk",
+      "cycle": 18,
+      "result": {
+        "error": "Agent sniper_bulk crashed: 'scan_history'"
+      }
+    },
+    {
+      "at": "2026-10-03T14:08:55.335813+00:00",
+      "agent": "fixer_swarm",
+      "cycle": 18,
+      "result": {
+        "success": true,
+        "result": {
+          "status": "no_llm",
+          "queue_size": 0
+        }
       }
     }
   ]

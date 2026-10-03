@@ -116,8 +116,8 @@
     "dwebagents/AgentPipe#2120": {
       "merged": false,
       "state": "open",
-      "mergeable": true,
-      "mergeable_state": "clean",
+      "mergeable": null,
+      "mergeable_state": "unknown",
       "title": "feat(docs): contributors webpage with goose-people portraits (#1580)",
       "review_state": "DISMISSED",
       "review_by": "agentpipe-clerk[bot]",
