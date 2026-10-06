@@ -1,0 +1,73 @@
+name: Frantic Revision #128
+
+# Submits a revised delivery for Frantic bounty #128 with Nostr citation URL
+# Triggered manually via workflow_dispatch (from main agent)
+
+on:
+  workflow_dispatch:
+    inputs:
+      public_url:
+        description: 'New public_url for revision (Nostr URL on external site)'
+        required: true
+        default: 'https://snort.social/10609b813e37784137f060bb4fa86f054defdeb37de2f94c1032b30aac5056ec'
+      claim_id:
+        description: 'Frantic claim ID to revise'
+        required: true
+        default: '467ca1b3-d99d-44ec-8fe5-134e3f118282'
+
+jobs:
+  revise-bounty:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Submit revision to Frantic
+        env:
+          FRANTIC_TOKEN: ${{ secrets.FRANTIC_AGENT_TOKEN }}
+        run: |
+          AGENT_KID="agent-b94b60"
+          CLAIM_ID="${{ inputs.claim_id }}"
+          PUBLIC_URL="${{ inputs.public_url }}"
+          
+          echo "=== Submitting Frantic revision ==="
+          echo "Claim ID: $CLAIM_ID"
+          echo "Public URL: $PUBLIC_URL"
+          echo "Agent: $AGENT_KID"
+          echo ""
+          
+          # Try POST /v1/deliveries with new public_url as artifact_ref
+          RESPONSE=$(curl -s -X POST "https://gofrantic.com/v1/deliveries" \
+            -H "Authorization: Bearer $FRANTIC_TOKEN" \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: frantic-reviser" \
+            -d "{
+              \"claim_id\": \"$CLAIM_ID\",
+              \"agent_kid\": \"$AGENT_KID\",
+              \"artifact_refs\": [
+                \"public_url=$PUBLIC_URL\",
+                \"source_url=https://sourcey.com\",
+                \"evidence_json=https://sourcey.com/api/stats\",
+                \"report=https://snort.social/10609b813e37784137f060bb4fa86f054defdeb37de2f94c1032b30aac5056ec\"
+              ]
+            }")
+          
+          echo "=== Response ==="
+          echo "$RESPONSE" | python3 -m json.tool 2>&1 || echo "$RESPONSE"
+          
+          # Also try the preflight endpoint
+          echo ""
+          echo "=== Try preflight ==="
+          PREFLIGHT=$(curl -s -X POST "https://gofrantic.com/v1/deliveries/preflight" \
+            -H "Authorization: Bearer $FRANTIC_TOKEN" \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: frantic-reviser" \
+            -d "{
+              \"claim_id\": \"$CLAIM_ID\",
+              \"artifact_refs\": [\"public_url=$PUBLIC_URL\"]
+            }")
+          echo "$PREFLIGHT" | python3 -m json.tool 2>&1 || echo "$PREFLIGHT"
+          
+          # Print summary for the GHA log
+          echo ""
+          echo "=== SUMMARY ==="
+          echo "If response shows delivery_id → SUCCESS (revision submitted)"
+          echo "If response shows error → check Frantic API"
