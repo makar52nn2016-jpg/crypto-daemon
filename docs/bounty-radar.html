@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto Bounty Radar — All Open Bounties in One Place</title>
+<meta name="description" content="Live aggregator of open crypto bounties from Frantic, GitHub, AstralDeep, Stompstart. Find funded work, claim, and earn USDC/XLM/ETH. Updated every 5 minutes.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:#0d1117;color:#c9d1d9;line-height:1.6}
+.container{max-width:1000px;margin:0 auto;padding:20px}
+h1{color:#58a6ff;font-size:2em;margin-bottom:5px}
+.subtitle{color:#8b949e;margin-bottom:20px}
+.stats{display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap}
+.stat{background:#161b22;padding:10px 15px;border-radius:8px;border:1px solid #30363d;text-align:center}
+.stat .num{font-size:1.5em;color:#3fb950;font-weight:bold}
+.stat .lbl{color:#8b949e;font-size:0.85em}
+.filters{margin-bottom:15px}
+.filters button{padding:8px 16px;margin:3px;background:#21262d;border:1px solid #30363d;color:#c9d1d9;border-radius:6px;cursor:pointer}
+.filters button.active{background:#238636;border-color:#238636;color:#fff}
+.filters button:hover{border-color:#58a6ff}
+.bounty{background:#161b22;padding:15px;margin:10px 0;border-radius:8px;border:1px solid #30363d;transition:border-color 0.2s}
+.bounty:hover{border-color:#58a6ff}
+.bounty-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:8px}
+.bounty-title{color:#f0883e;font-weight:bold;font-size:1.1em}
+.bounty-price{color:#3fb950;font-size:1.3em;font-weight:bold;white-space:nowrap}
+.bounty-meta{color:#8b949e;font-size:0.9em;display:flex;gap:15px;flex-wrap:wrap}
+.bounty-source{background:#1f6feb;color:#fff;padding:2px 8px;border-radius:12px;font-size:0.75em}
+.bounty-link{display:inline-block;margin-top:8px;color:#58a6ff;text-decoration:none;font-weight:bold}
+.bounty-link:hover{text-decoration:underline}
+.donate{margin-top:30px;padding:20px;background:#161b22;border-radius:8px;border:1px solid #30363d}
+.donate h3{color:#f0883e;margin-bottom:10px}
+.wallet{font-family:monospace;font-size:0.85em;color:#58a6ff;word-break:break-all;margin:5px 0;padding:8px;background:#0d1117;border-radius:4px;border:1px solid #30363d}
+.loading{text-align:center;padding:40px;color:#8b949e}
+.empty{text-align:center;padding:20px;color:#8b949e}
+footer{text-align:center;padding:20px;color:#8b949e;font-size:0.85em}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:0.75em;margin-left:5px}
+.badge-live{background:#238636;color:#fff}
+.refresh{float:right;padding:5px 15px;background:#21262d;border:1px solid #30363d;color:#c9d1d9;border-radius:6px;cursor:pointer}
+.refresh:hover{border-color:#58a6ff}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🎯 Crypto Bounty Radar <span class="badge badge-live">● LIVE</span></h1>
+<p class="subtitle">All open crypto bounties in one place. Aggregated from Frantic, GitHub, AstralDeep, Stompstart. Updated every 5 minutes.</p>
+
+<div class="stats" id="stats">
+<div class="stat"><div class="num" id="totalBounties">-</div><div class="lbl">Total Bounties</div></div>
+<div class="stat"><div class="num" id="totalValue">-</div><div class="lbl">Total Funded</div></div>
+<div class="stat"><div class="num" id="sources">4</div><div class="lbl">Sources</div></div>
+<div class="stat"><div class="num">5min</div><div class="lbl">Refresh</div></div>
+</div>
+
+<div class="filters">
+<button class="active" onclick="filterBounties('all')">All</button>
+<button onclick="filterBounties('frantic')">Frantic</button>
+<button onclick="filterBounties('github')">GitHub</button>
+<button onclick="filterBounties('astraldeep')">AstralDeep</button>
+<button onclick="filterBounties('stompstart')">Stompstart</button>
+<button onclick="loadBounties()" class="refresh">🔄 Refresh</button>
+</div>
+
+<div id="bounties"><div class="loading">Loading bounties...</div></div>
+
+<div class="donate">
+<h3>💸 Support This Tool</h3>
+<p>This aggregator runs on free infrastructure (GitHub Pages + Actions). If it helped you find a bounty, consider supporting:</p>
+<div class="wallet">ETH/USDC (Base): 0x53dbe1b36BA3BEAC6cEf6cD22AD50E362DBcB23A</div>
+<div class="wallet">XLM: GBAUE3TLQMHDFGHQVLHE4LCJJQKVSSHM6YB2SCG2VX2M7XXKWPWCJBRQ</div>
+<div class="wallet">BTC: bc1q0f99e8pcp6n6wgfv09kyea3gettra0qwme98xm5</div>
+<div class="wallet">TON: UQDyOVPv7hrvOePpOLQL5SiV2VxXs4P5A3A3rHOb9BvvOPtH</div>
+</div>
+
+<footer>
+<p>Crypto Bounty Radar — Built by <a href="https://github.com/makar52nn2016-jpg" style="color:#58a6ff">makar52nn2016-jpg</a></p>
+<p>MIT License · Free · Autonomous · 24/7</p>
+</footer>
+</div>
+
+<script>
+let allBounties = [];
+let currentFilter = 'all';
+
+async function loadBounties() {
+    const container = document.getElementById('bounties');
+    container.innerHTML = '<div class="loading">Fetching bounties from all sources...</div>';
+    allBounties = [];
+
+    // 1. Frantic Board
+    try {
+        const res = await fetch('https://gofrantic.com/v1/board');
+        const data = await res.json();
+        const bounties = data.board.open_bounties || [];
+        let totalFunded = data.board.funded_usd || 0;
+        for (const b of bounties) {
+            const cp = b.claim_progress || {};
+            if ((cp.available || 0) > 0 || b.work_status === 'open') {
+                allBounties.push({
+                    source: 'frantic',
+                    title: b.title || 'Untitled',
+                    price: '$' + (b.price_usd || 0),
+                    available: (cp.available || 0) + '/' + (cp.capacity || 0),
+                    paid: cp.paid || 0,
+                    url: 'https://gofrantic.com/bounties/' + b.number,
+                    number: b.number
+                });
+            }
+        }
+        document.getElementById('totalValue').textContent = '$' + totalFunded;
+    } catch(e) { console.log('Frantic error:', e); }
+
+    // 2. GitHub Bounty Issues (via search API - CORS might block, try anyway)
+    try {
+        const res = await fetch('https://api.github.com/search/issues?q=label:bounty+state:open+created:%3E%3D2026-09-27&per_page=15&sort=created&order=desc', {
+            headers: {'Accept': 'application/vnd.github.v3+json'}
+        });
+        const data = await res.json();
+        const items = data.items || [];
+        for (const item of items) {
+            // Extract $ amount from title/body
+            const text = (item.title || '') + ' ' + (item.body || '');
+            const match = text.match(/\$(\d+)/);
+            const price = match ? '$' + match[1] : '$?';
+            const repo = (item.repository_url || '').replace('https://api.github.com/repos/', '');
+            allBounties.push({
+                source: 'github',
+                title: item.title || 'Untitled',
+                price: price,
+                available: item.comments === 0 ? 'OPEN' : item.comments + ' comments',
+                paid: 0,
+                url: item.html_url,
+                number: item.number
+            });
+        }
+    } catch(e) { console.log('GitHub error:', e); }
+
+    // 3. AstralDeep bounties (static list — we know the repos)
+    const astralRepos = [
+        {repo: 'AstralDeep/LETS', name: 'LETS'},
+        {repo: 'AstralDeep/AstralPrimitives', name: 'AstralPrimitives'},
+        {repo: 'AstralDeep/AstralProjection', name: 'AstralProjection'},
+        {repo: 'AstralDeep/AstralDeep', name: 'AstralDeep'},
+        {repo: 'AstralDeep/AstralPlane', name: 'AstralPlane'}
+    ];
+    for (const r of astralRepos) {
+        try {
+            const res = await fetch('https://api.github.com/repos/' + r.repo + '/issues?state=open&labels=bounty&per_page=5&sort=created&direction=desc', {
+                headers: {'Accept': 'application/vnd.github.v3+json'}
+            });
+            const items = await res.json();
+            if (Array.isArray(items)) {
+                for (const item of items) {
+                    if (item.pull_request) continue;
+                    const labels = (item.labels || []).map(l => l.name);
+                    const ptsLabel = labels.find(l => l.includes('points:'));
+                    const pts = ptsLabel ? ptsLabel.split(':')[1] : '?';
+                    allBounties.push({
+                        source: 'astraldeep',
+                        title: item.title || 'Untitled',
+                        price: pts + ' pts',
+                        available: item.comments === 0 ? 'OPEN' : item.comments + ' comments',
+                        paid: 0,
+                        url: item.html_url,
+                        number: item.number,
+                        repo: r.name
+                    });
+                }
+            }
+        } catch(e) { console.log('AstralDeep error:', r.repo, e); }
+    }
+
+    // 4. Stompstart (Frantic bounty #136 — startup listings)
+    try {
+        const res = await fetch('https://api.github.com/repos/auscaster/stompstart-startup-list/pulls?state=open&per_page=5&sort=created&direction=desc', {
+            headers: {'Accept': 'application/vnd.github.v3+json'}
+        });
+        const items = await res.json();
+        if (Array.isArray(items)) {
+            for (const item of items) {
+                allBounties.push({
+                    source: 'stompstart',
+                    title: item.title || 'Startup listing',
+                    price: '$1.50',
+                    available: 'OPEN',
+                    paid: 0,
+                    url: item.html_url,
+                    number: item.number
+                });
+            }
+        }
+    } catch(e) { console.log('Stompstart error:', e); }
+
+    // Display
+    document.getElementById('totalBounties').textContent = allBounties.length;
+    displayBounties();
+}
+
+function displayBounties() {
+    const container = document.getElementById('bounties');
+    const filtered = currentFilter === 'all' ? allBounties : allBounties.filter(b => b.source === currentFilter);
+    
+    if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty">No bounties found. Try refreshing.</div>';
+        return;
+    }
+    
+    container.innerHTML = filtered.map(b => `
+        <div class="bounty">
+            <div class="bounty-header">
+                <div>
+                    <span class="bounty-source">${b.source}</span>
+                    <span class="bounty-title">${b.title}</span>
+                </div>
+                <div class="bounty-price">${b.price}</div>
+            </div>
+            <div class="bounty-meta">
+                <span>📋 Available: ${b.available}</span>
+                ${b.paid ? '<span>✅ Paid: ' + b.paid + '</span>' : ''}
+                ${b.repo ? '<span>📦 Repo: ' + b.repo + '</span>' : ''}
+            </div>
+            <a href="${b.url}" target="_blank" class="bounty-link">View & Claim →</a>
+        </div>
+    `).join('');
+}
+
+function filterBounties(source) {
+    currentFilter = source;
+    document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    displayBounties();
+}
+
+// Auto-refresh every 5 minutes
+loadBounties();
+setInterval(loadBounties, 300000);
+</script>
+</body>
+</html>
