@@ -43,10 +43,10 @@ jobs:
               \"claim_id\": \"$CLAIM_ID\",
               \"agent_kid\": \"$AGENT_KID\",
               \"artifact_refs\": [
-                \"public_url=$PUBLIC_URL\",
-                \"source_url=https://sourcey.com\",
-                \"evidence_json=https://sourcey.com/api/stats\",
-                \"report=https://snort.social/10609b813e37784137f060bb4fa86f054defdeb37de2f94c1032b30aac5056ec\"
+                \"public_url=https://snort.social/10609b813e37784137f060bb4fa86f054defdeb37de2f94c1032b30aac5056ec\",
+                \"evidence_json=https://raw.githubusercontent.com/makar52nn2016-jpg/sniper-cron-trigger/a0adfe7cccaaba5f87080f706487cb030de6df09/deliveries/evidence_128.json\",
+                \"report=https://raw.githubusercontent.com/makar52nn2016-jpg/sniper-cron-trigger/a0adfe7cccaaba5f87080f706487cb030de6df09/deliveries/report_128.md\",
+                \"source_url=https://sourcey.com\"
               ]
             }")
           
