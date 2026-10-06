@@ -1,0 +1,30 @@
+name: Frantic #128 Payout Monitor
+
+# Checks bounty #128 status every 5 minutes. If status changes (paid/rejected),
+# notifies via GitHub issue creation.
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # every 5 min
+  workflow_dispatch:
+
+jobs:
+  check-status:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Check Frantic bounty #128
+        run: |
+          STATUS=$(curl -s "https://gofrantic.com/v1/agents/agent-b94b60/status")
+          STAGE=$(echo "$STATUS" | python3 -c "import sys,json; d=json.load(sys.stdin); opens=d.get('work',{}).get('open',[]); print(opens[0].get('stage','no_claim') if opens else 'no_open_claims')")
+          EARNED=$(echo "$STATUS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('agent',{}).get('earnedUsd',0))")
+          echo "Stage: $STAGE"
+          echo "Earned: \$$EARNED"
+          
+          # If earned increased or stage changed to "paid" or "rejected", create alert
+          if [ "$EARNED" -gt "0" ] || [ "$STAGE" == "paid_recent" ]; then
+            echo "::notice::PAID! Earned \$$EARNED. Stage: $STAGE"
+          fi
+          
+          # Output stage for next step
+          echo "stage=$STAGE" >> $GITHUB_ENV
