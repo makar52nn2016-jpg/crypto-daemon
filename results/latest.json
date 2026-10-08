@@ -1,0 +1,157 @@
+{
+  "results": [
+    {
+      "cmd": "set_token",
+      "ts": "2026-10-08T13:51:18.310001",
+      "ok": true,
+      "saved_to": "C:\\Users\\makar\\.gh-token"
+    },
+    {
+      "cmd": "check_wallet",
+      "ts": "2026-10-08T13:51:18.311270",
+      "ok": true,
+      "stats": {
+        "eth": "$1.08",
+        "usdc": "$0.0000",
+        "frantic": "$0",
+        "prs": "18",
+        "earned": "$0",
+        "pending": "$462.50"
+      }
+    },
+    {
+      "cmd": "check_prs",
+      "ts": "2026-10-08T13:51:19.507271",
+      "ok": true,
+      "prs": [
+        {
+          "name": "IfcOpenShell $92.50",
+          "repo": "IfcOpenShell/IfcOpenShell",
+          "num": 9855,
+          "state": "open",
+          "comments": 0
+        },
+        {
+          "name": "humanvouch $70",
+          "repo": "vouchlabsio/humanvouch",
+          "num": 113,
+          "state": "merged",
+          "comments": 0
+        },
+        {
+          "name": "humanvouch $95",
+          "repo": "vouchlabsio/humanvouch",
+          "num": 114,
+          "state": "merged",
+          "comments": 0
+        },
+        {
+          "name": "humanvouch $90",
+          "repo": "vouchlabsio/humanvouch",
+          "num": 115,
+          "state": "open",
+          "comments": 0
+        },
+        {
+          "name": "slippay $75",
+          "repo": "slippay-labs/slippay",
+          "num": 113,
+          "state": "open",
+          "comments": 0
+        },
+        {
+          "name": "stellita $40",
+          "repo": "stellita-labs/stellita-app",
+          "num": 116,
+          "state": "open",
+          "comments": 0
+        },
+        {
+          "name": "MisakaNet lesson",
+          "repo": "Ikalus1988/MisakaNet",
+          "num": 2921,
+          "state": "open",
+          "comments": 5
+        },
+        {
+          "name": "Greenfield USDC",
+          "repo": "GermanoDevelopment/greenfield",
+          "num": 51,
+          "state": "open",
+          "comments": 3
+        },
+        {
+          "name": "Greenfield P0",
+          "repo": "GermanoDevelopment/greenfield",
+          "num": 52,
+          "state": "open",
+          "comments": 1
+        },
+        {
+          "name": "Crystal-PDF mobile",
+          "repo": "iii123iii/Crystal-PDF",
+          "num": 121,
+          "state": "open",
+          "comments": 1
+        },
+        {
+          "name": "AstralPrimitives #21",
+          "repo": "AstralDeep/AstralPrimitives",
+          "num": 21,
+          "state": "open",
+          "comments": 2
+        },
+        {
+          "name": "AstralPrimitives #26",
+          "repo": "AstralDeep/AstralPrimitives",
+          "num": 26,
+          "state": "open",
+          "comments": 3
+        },
+        {
+          "name": "LETS #87",
+          "repo": "AstralDeep/LETS",
+          "num": 87,
+          "state": "open",
+          "comments": 2
+        },
+        {
+          "name": "bug-bounty padlock",
+          "repo": "SecureBananaLabs/bug-bounty",
+          "num": 12770,
+          "state": "open",
+          "comments": 1
+        },
+        {
+          "name": "bug-bounty poem",
+          "repo": "SecureBananaLabs/bug-bounty",
+          "num": 12771,
+          "state": "open",
+          "comments": 1
+        },
+        {
+          "name": "OMT glossary",
+          "repo": "opensource-maintainer-toolkit/open-source-maintainer-toolkit",
+          "num": 57,
+          "state": "open",
+          "comments": 0
+        },
+        {
+          "name": "OMT community",
+          "repo": "opensource-maintainer-toolkit/open-source-maintainer-toolkit",
+          "num": 58,
+          "state": "open",
+          "comments": 0
+        },
+        {
+          "name": "stellar-bounty-board CI",
+          "repo": "ritik4ever/stellar-bounty-board",
+          "num": 1587,
+          "state": "open",
+          "comments": 1
+        }
+      ]
+    }
+  ],
+  "ts": "2026-10-08T13:51:37.817525"
+}
