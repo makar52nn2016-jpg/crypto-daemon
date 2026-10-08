@@ -1,28 +1,45 @@
 #!/usr/bin/env python3
 """
-PC Bot v2 — BULLDOZER MODE
-Uses PC resources at 100%: browser automation, auto-claim, auto-post, parallel monitoring.
+BULLDOZER v3 — Active money digger.
+Searches bounties, claims them, monitors email, checks PRs, watches wallet.
+Uses PC resources to MAXIMIZE income.
 """
-import json, os, time, subprocess, webbrowser, urllib.request, urllib.error, sys, threading
+import json, os, time, urllib.request, urllib.error, imaplib, email
+from email.header import decode_header
 from datetime import datetime, timedelta
-from pathlib import Path
 
-GITHUB_TOKEN = os.environ.get("GH_TOKEN", "")
-WALLET_BASE = "0x53dbe1b36BA3BEAC6cEf6cD22AD50E362DBcB23A"
-FRANTIC_AGENT = "agent-b94b60"
-BTC_WALLET = "bc1q0f99e8pcp6n6wgfv09kyea3getra0qwme98xm5"
-XLM_WALLET = "GBAUE3TLQMHDFGHQVLHE4LCJJQKVSSHM6YB2SCG2VX2M7XXKWPWCJBRQ"
+GH_TOKEN = os.environ.get("GH_TOKEN", "")
+WALLET = "0x53dbe1b36BA3BEAC6cEf6cD22AD50E362DBcB23A"
+FRANTIC = "agent-b94b60"
+XLM = "GBAUE3TLQMHDFGHQVLHE4LCJJQKVSSHM6YB2SCG2VX2M7XXKWPWCJBRQ"
+BTC = "bc1q0f99e8pcp6n6wgfv09kyea3getra0qwme98xm5"
+EMAIL = "makar52nn2016@gmail.com"
+EMAIL_PASS = "hgxs ozyt zlwg mewr"
 LOG = os.path.join(os.environ.get("USERPROFILE",""), "Desktop", "bulldozer.log")
 
-def log(msg):
+PRS = [
+    ("Ikalus1988/MisakaNet", 2921),
+    ("GermanoDevelopment/greenfield", 51),
+    ("GermanoDevelopment/greenfield", 52),
+    ("Heliobond/frontend", 676),
+    ("IfcOpenShell/IfcOpenShell", 9855),
+    ("vouchlabsio/humanvouch", 113),
+]
+
+last_balance = 0
+last_frantic = 0
+seen_bounties = set()
+last_email_count = 0
+
+def log(m):
     ts = datetime.now().strftime("%H:%M:%S")
-    line = f"[{ts}] {msg}"
+    line = f"[{ts}] {m}"
     print(line, flush=True)
     with open(LOG, "a", encoding="utf-8") as f:
         f.write(line + "\n")
 
 def gh(url, method="GET", data=None):
-    h = {"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.github+json", "User-Agent": "bulldozer"}
+    h = {"Authorization": f"token {GH_TOKEN}", "Accept": "application/vnd.github+json", "User-Agent": "bulldozer"}
     if data:
         data = json.dumps(data).encode()
         h["Content-Type"] = "application/json"
@@ -34,218 +51,241 @@ def gh(url, method="GET", data=None):
         try: return json.loads(e.read().decode())
         except: return {"error": e.code}
     except Exception as e:
-        return {"error": str(e)[:80]}
+        return {"error": str(e)[:60]}
 
-def rpc(method, params):
-    data = json.dumps({"jsonrpc":"2.0","method":method,"params":params,"id":1}).encode()
-    req = urllib.request.Request("https://base-mainnet.g.alchemy.com/v2/alch_BUo0TYqkD24rLEzrz4U3n", data=data, headers={"Content-Type":"application/json"})
+# ============================================================
+# 1. EMAIL MONITOR — check Gmail for new GitHub/payment emails
+# ============================================================
+def check_email():
+    global last_email_count
     try:
-        with urllib.request.urlopen(req, timeout=10) as r:
-            return json.loads(r.read().decode()).get("result","0x0")
-    except: return "0x0"
+        mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
+        mail.login(EMAIL, EMAIL_PASS)
+        mail.select("INBOX")
+        typ, data = mail.search(None, "ALL")
+        ids = data[0].split()
+        total = len(ids)
+        
+        if total > last_email_count and last_email_count > 0:
+            new_count = total - last_email_count
+            log(f"📧 {new_count} NEW EMAIL(S)! Total: {total}")
+            # Read last 3 new emails
+            for mid in reversed(ids[-min(new_count, 3):]):
+                typ, msg_data = mail.fetch(mid, "(RFC822)")
+                for response_part in msg_data:
+                    if isinstance(response_part, tuple):
+                        msg = email.message_from_bytes(response_part[1])
+                        subject = decode_header(msg.get("Subject",""))
+                        st = ""
+                        for part, enc in subject:
+                            if isinstance(part, bytes):
+                                st += part.decode(enc or "utf-8", errors="replace")
+                            else:
+                                st += part
+                        frm = msg.get("From","?")[:40]
+                        # Check for important keywords
+                        important = any(k in st.lower() for k in ['merge','paid','reward','payout','success','approved','sats','usdc','bounty'])
+                        marker = "💰" if important else "  "
+                        log(f"  {marker} {frm}: {st[:80]}")
+                        # If merge/payment — open browser!
+                        if any(k in st.lower() for k in ['merged','paid','reward','payout']):
+                            import webbrowser
+                            webbrowser.open("https://mail.google.com/mail/u/0/#inbox")
+        
+        last_email_count = total
+        mail.logout()
+        log(f"📧 Email: {total} total (last check: {last_email_count})")
+    except Exception as e:
+        log(f"📧 Email check failed: {str(e)[:50]}")
 
 # ============================================================
-# TASK 1: MONITOR ALL PRs — alert on merge/comment/payment
+# 2. ACTIVE BOUNTY HUNTER — search + auto-claim
 # ============================================================
-PRS = [
-    ("Ikalus1988/MisakaNet", 2921, "MisakaNet lesson #2"),
-    ("GermanoDevelopment/greenfield", 51, "Greenfield USDC fix"),
-    ("GermanoDevelopment/greenfield", 52, "Greenfield P0-blocker"),
-    ("Heliobond/frontend", 676, "Heliobond Stellar Wave"),
-    ("IfcOpenShell/IfcOpenShell", 9855, "IfcOpenShell $92.50 bounty"),
-]
+def hunt_bounties():
+    """Search for NEW funded bounties with $ + 0 comments. Auto-claim the best ones."""
+    # Search for $ bounties with 0 comments created in last 6 hours
+    six_hours_ago = (datetime.now() - timedelta(hours=6)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    query = urllib.request.quote(f'bounty state:open type:issue comments:0 created:>{six_hours_ago}')
+    
+    results = gh(f"https://api.github.com/search/issues?q={query}&sort=created&order=desc&per_page=10")
+    
+    if not isinstance(results, dict) or results.get("error"):
+        return
+    
+    items = results.get("items", [])
+    found = 0
+    for item in items:
+        title = item.get("title", "")
+        url = item.get("html_url", "")
+        
+        if url in seen_bounties:
+            continue
+        seen_bounties.add(url)
+        
+        # Check for $ amount in title
+        has_money = any(s in title for s in ["$", "USDC", "sats", "BTC", "ETH"])
+        if not has_money:
+            continue
+        
+        repo = item.get("repository_url", "").split("/")[-1]
+        comments = item.get("comments", 0)
+        
+        if comments == 0 and has_money:
+            found += 1
+            log(f"🎯 FOUND BOUNTY: {repo}: {title[:60]}")
+            log(f"   {url}")
+            
+            # Open in browser for user to see
+            import webbrowser
+            webbrowser.open(url)
+            
+            # DON'T auto-claim — let user decide
+            # But log it prominently
+    
+    if found == 0:
+        log(f"🔍 Searched {len(items)} issues — no new funded bounties with 0 comments")
+    else:
+        log(f"🔍 Found {found} new funded bounties! Opened in browser.")
 
-last_states = {}
-
+# ============================================================
+# 3. PR MONITOR — check all PRs for merges + new comments
+# ============================================================
 def check_prs():
-    for repo, num, name in PRS:
+    for repo, num in PRS:
         d = gh(f"https://api.github.com/repos/{repo}/pulls/{num}")
-        if not isinstance(d, dict) or d.get("error"): continue
+        if not isinstance(d, dict) or d.get("error"):
+            continue
+        
         merged = d.get("merged", False)
         state = d.get("state", "?")
         comments = d.get("comments", 0)
-        key = f"{repo}#{num}"
-        prev = last_states.get(key, {})
+        title = d.get("title", "?")[:40]
         
-        if merged and not prev.get("merged"):
-            log(f"💰💰💰 MERGED! {name} — {repo}#{num}")
-            log(f"   URL: https://github.com/{repo}/pull/{num}")
+        if merged:
+            log(f"💰💰💰 MERGED! {repo}#{num}: {title}")
+            import webbrowser
             webbrowser.open(f"https://github.com/{repo}/pull/{num}")
-            # Check for payment!
-            check_wallet_for_payment()
-        
-        if comments > prev.get("comments", 0):
-            # Get latest comment
-            cs = gh(f"https://api.github.com/repos/{repo}/issues/{num}/comments?per_page=1&sort=created&direction=desc")
-            if isinstance(cs, list) and cs:
-                c = cs[0]
-                user = c.get("user",{}).get("login","?")
-                if "makar52" not in user and "bot" not in user.lower() and "github-actions" not in user:
-                    body = c.get("body","")[:200]
-                    log(f"💬 NEW COMMENT on {name} by @{user}: {body}")
-                    webbrowser.open(f"https://github.com/{repo}/pull/{num}")
-        
-        last_states[key] = {"merged": merged, "comments": comments, "state": state}
-        
-        if not prev:
-            log(f"📋 {name}: {state} ({comments}c)")
+            # Check wallet for payment!
+            check_wallet()
+        elif state == "open":
+            log(f"📋 {repo}#{num}: open ({comments}c) — {title}")
+        else:
+            log(f"❌ {repo}#{num}: {state} — {title}")
 
 # ============================================================
-# TASK 2: MONITOR WALLET — alert on incoming payments
+# 4. WALLET MONITOR — ETH + USDC on Base
 # ============================================================
-last_balance = 0
-
 def check_wallet():
     global last_balance
-    bal_hex = rpc("eth_getBalance", [WALLET_BASE, "latest"])
-    bal = int(bal_hex, 16) / 1e18
-    usd = bal * 2700
-    
-    if last_balance > 0 and bal > last_balance * 1.01:  # >1% increase = payment!
-        diff = bal - last_balance
-        log(f"💰💰💰 INCOMING PAYMENT! +{diff:.6f} ETH (${diff*2700:.2f})")
-        log(f"   Total: {bal:.6f} ETH (${usd:.2f})")
-        webbrowser.open(f"https://basescan.org/address/{WALLET_BASE}")
-    
-    # Also check USDC
-    addr = WALLET_BASE.lower().replace("0x","").zfill(64)
-    usdc_hex = rpc("eth_call", [{"to":"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913","data":f"0x70a08231{addr}"}, "latest"])
-    usdc = int(usdc_hex, 16) / 1e6 if usdc_hex != "0x" else 0
-    
-    log(f"💵 ETH: ${usd:.2f} | USDC: {usdc:.6f}")
-    last_balance = bal
-
-# ============================================================
-# TASK 3: MONITOR FRANTIC — alert on payout
-# ============================================================
-last_frantic_earned = 0
-
-def check_frantic():
-    global last_frantic_earned
     try:
-        req = urllib.request.Request(f"https://gofrantic.com/v1/agents/{FRANTIC_AGENT}/status")
+        data = json.dumps({"jsonrpc":"2.0","method":"eth_getBalance","params":[WALLET,"latest"],"id":1}).encode()
+        req = urllib.request.Request("https://base-mainnet.g.alchemy.com/v2/alch_BUo0TYqkD24rLEzrz4U3n", data=data, headers={"Content-Type":"application/json"})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            result = json.loads(r.read().decode())
+        bal = int(result.get("result","0x0"), 16) / 1e18
+        usd = bal * 2700
+        
+        if last_balance > 0 and bal > last_balance * 1.01:
+            diff = bal - last_balance
+            log(f"💰💰💰 PAYMENT RECEIVED! +{diff:.6f} ETH (+${diff*2700:.2f})")
+            import webbrowser
+            webbrowser.open(f"https://basescan.org/address/{WALLET}")
+        
+        # Check USDC
+        addr = WALLET.lower().replace("0x","").zfill(64)
+        usdc_data = json.dumps({"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913","data":f"0x70a08231{addr}"}, "latest"],"id":1}).encode()
+        usdc_req = urllib.request.Request("https://base-mainnet.g.alchemy.com/v2/alch_BUo0TYqkD24rLEzrz4U3n", data=usdc_data, headers={"Content-Type":"application/json"})
+        with urllib.request.urlopen(usdc_req, timeout=10) as r:
+            usdc_result = json.loads(r.read().decode())
+        usdc_bal = int(usdc_result.get("result","0x0"), 16) / 1e6
+        
+        log(f"💵 ETH: ${usd:.2f} | USDC: {usdc_bal:.6f}")
+        last_balance = bal
+    except Exception as e:
+        log(f"💵 Wallet check failed: {str(e)[:40]}")
+
+# ============================================================
+# 5. FRANTIC MONITOR
+# ============================================================
+def check_frantic():
+    global last_frantic
+    try:
+        req = urllib.request.Request(f"https://gofrantic.com/v1/agents/{FRANTIC}/status")
         with urllib.request.urlopen(req, timeout=10) as r:
             d = json.loads(r.read().decode())
         earned = d.get("agent",{}).get("earnedUsd",0)
         opens = d.get("work",{}).get("open",[])
         stage = opens[0].get("stage","?") if opens else "none"
         
-        if earned > last_frantic_earned and last_frantic_earned >= 0:
-            log(f"💰💰💰 FRANTIC PAID! ${earned} (was ${last_frantic_earned})")
-            webbrowser.open(f"https://gofrantic.com/a/{FRANTIC_AGENT}")
+        if earned > last_frantic and last_frantic >= 0:
+            log(f"💰💰💰 FRANTIC PAID! ${earned}!")
+            import webbrowser
+            webbrowser.open(f"https://gofrantic.com/a/{FRANTIC}")
         
-        log(f"🤖 Frantic: ${earned} | stage: {stage}")
-        last_frantic_earned = earned
+        log(f"🤖 Frantic: ${earned} | {stage}")
+        last_frantic = earned
     except Exception as e:
-        log(f"⚠️ Frantic: {str(e)[:40]}")
+        log(f"🤖 Frantic check failed: {str(e)[:40]}")
 
 # ============================================================
-# TASK 4: SEARCH FOR NEW FUNDED BOUNTIES — auto-claim low competition
+# 6. XLM + BTC CHECK
 # ============================================================
-seen_bounties = set()
-
-def search_bounties():
-    # Search for bounties with $ amount + 0-2 comments (low competition)
-    results = gh("https://api.github.com/search/issues?q=" + 
-        urllib.request.quote("bounty state:open type:issue comments:0..2 created:>{}T00:00:00Z".format(
-            (datetime.now() - timedelta(hours=1)).strftime("%Y-%m-%d")
-        )) + "&sort=created&order=desc&per_page=10")
+def check_xlm_btc():
+    try:
+        req = urllib.request.Request(f"https://horizon.stellar.org/accounts/{XLM}")
+        with urllib.request.urlopen(req, timeout=10) as r:
+            d = json.loads(r.read().decode())
+        bal = d.get("balances",[{}])[0].get("balance","0")
+        log(f"💎 XLM: {bal}")
+    except: pass
     
-    if not isinstance(results, dict): return
-    items = results.get("items", [])
-    for item in items:
-        url = item.get("html_url","")
-        if url in seen_bounties: continue
-        seen_bounties.add(url)
-        
-        title = item.get("title","")[:70]
-        repo = item.get("repository_url","").split("/")[-1]
-        comments = item.get("comments", 0)
-        
-        # Check if it has $ amount in title
-        has_dollar = "$" in title or "USDC" in title.upper() or "sats" in title.lower()
-        
-        if has_dollar and comments <= 1:
-            log(f"🎯 FUNDED BOUNTY [{comments}c]: {repo}: {title}")
-            log(f"   {url}")
-            # Open in browser for user to review
-            webbrowser.open(url)
-
-# ============================================================
-# TASK 5: CHECK XLM WALLET — Stellar payments
-# ============================================================
-def check_xlm():
     try:
-        req = urllib.request.Request(f"https://horizon.stellar.org/accounts/{XLM_WALLET}/effects?limit=1&order=desc")
+        req = urllib.request.Request(f"https://blockchain.info/rawaddr/{BTC}?limit=1")
         with urllib.request.urlopen(req, timeout=10) as r:
             d = json.loads(r.read().decode())
-        effects = d.get("_embedded",{}).get("records",[])
-        if effects:
-            e = effects[0]
-            t = e.get("type","?")
-            amount = e.get("amount","")
-            if "credited" in t and amount and float(amount) > 0:
-                log(f"💰💰💰 XLM INCOMING! {amount} XLM")
-                webbrowser.open(f"https://stellar.expert/explorer/public/account/{XLM_WALLET}")
+        bal = d.get("final_balance",0) / 1e8
+        n_tx = d.get("n_tx",0)
+        if bal > 0 or n_tx > 0:
+            log(f"₿ BTC: {bal:.8f} ({n_tx} txs)")
     except: pass
 
 # ============================================================
-# TASK 6: AUTO-COMMENT ON PRs — keep them alive
-# ============================================================
-def ping_stale_prs():
-    """Ping PRs that haven't been updated in 24h."""
-    for repo, num, name in PRS:
-        d = gh(f"https://api.github.com/repos/{repo}/pulls/{num}")
-        if not isinstance(d, dict) or d.get("error"): continue
-        updated = d.get("updated_at","")
-        if not updated: continue
-        try:
-            upd = datetime.fromisoformat(updated.replace("Z","+00:00"))
-            age = datetime.now(upd.tzinfo) - upd
-            if age > timedelta(hours=12):
-                log(f"⏰ {name} not updated in {age.total_seconds()/3600:.0f}h — pinging")
-                # Don't auto-comment too often — just log for now
-        except: pass
-
-# ============================================================
-# TASK 7: CHECK BTC WALLET — Lightning payments
-# ============================================================
-def check_btc():
-    try:
-        req = urllib.request.Request(f"https://blockchain.info/rawaddr/{BTC_WALLET}?limit=1")
-        with urllib.request.urlopen(req, timeout=10) as r:
-            d = json.loads(r.read().decode())
-        balance = d.get("final_balance", 0) / 1e8
-        n_tx = d.get("n_tx", 0)
-        if balance > 0:
-            log(f"💰 BTC: {balance:.8f} BTC ({n_tx} txs)")
-        # Check for new transactions
-        txs = d.get("txs", [])
-        if txs:
-            latest = txs[0]
-            log(f"   Latest TX: {latest.get('hash','?')[:20]}...")
-    except: pass
-
-# ============================================================
-# MAIN LOOP
+# MAIN — bulldozer cycle
 # ============================================================
 def run_cycle():
-    log("=" * 50)
+    log("=" * 60)
+    log("🚜 BULLDOZER CYCLE START")
+    log("=" * 60)
+    
+    log("--- 1. Checking email ---")
+    check_email()
+    
+    log("--- 2. Hunting bounties ---")
+    hunt_bounties()
+    
+    log("--- 3. Checking PRs ---")
     check_prs()
-    check_frantic()
+    
+    log("--- 4. Checking wallet ---")
     check_wallet()
-    check_xlm()
-    check_btc()
-    search_bounties()
-    ping_stale_prs()
-    log("⏳ Next check in 5 min...")
+    
+    log("--- 5. Checking Frantic ---")
+    check_frantic()
+    
+    log("--- 6. Checking XLM + BTC ---")
+    check_xlm_btc()
+    
+    log("=" * 60)
+    log(f"⏳ Cycle done. Sleeping 5 min. Next: {datetime.now() + timedelta(minutes=5):%H:%M:%S}")
+    log("=" * 60)
 
 def main():
-    log("🚜 BULLDOZER BOT v2 STARTED")
-    log(f"Monitoring: {len(PRS)} PRs + Frantic + ETH + XLM + BTC")
-    log(f"Auto-search: funded bounties every 5 min")
-    log(f"Wallet: {WALLET_BASE}")
-    log(f"Log: {LOG}")
+    log("🚜🚜🚜 BULLDOZER v3 STARTED 🚜🚜🚜")
+    log(f"📊 Monitoring: {len(PRS)} PRs + Frantic + ETH + XLM + BTC + Email")
+    log(f"🔍 Active bounty hunter: searches every 5 min")
+    log(f"📧 Email monitor: checks Gmail for new notifications")
+    log(f"💵 Wallet: {WALLET}")
+    log(f"📝 Log: {LOG}")
     log("")
     
     while True:
@@ -255,7 +295,7 @@ def main():
             log("Bot stopped by user.")
             break
         except Exception as e:
-            log(f"⚠️ Error: {str(e)[:80]}")
+            log(f"⚠️ Cycle error: {str(e)[:80]}")
         time.sleep(300)
 
 if __name__ == "__main__":
