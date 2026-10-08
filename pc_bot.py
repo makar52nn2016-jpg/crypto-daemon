@@ -12,7 +12,7 @@ WALLET_BASE = "0x53dbe1b36BA3BEAC6cEf6cD22AD50E362DBcB23A"
 FRANTIC_AGENT = "agent-b94b60"
 BTC_WALLET = "bc1q0f99e8pcp6n6wgfv09kyea3getra0qwme98xm5"
 XLM_WALLET = "GBAUE3TLQMHDFGHQVLHE4LCJJQKVSSHM6YB2SCG2VX2M7XXKWPWCJBRQ"
-LOG = Path(os.environ.get("USERPROFILE","")) + r"\Desktop\bulldozer.log"
+LOG = os.path.join(os.environ.get("USERPROFILE",""), "Desktop", "bulldozer.log")
 
 def log(msg):
     ts = datetime.now().strftime("%H:%M:%S")
