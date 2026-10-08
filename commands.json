@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "cmd": "check_wallet",
+    "_note": "Test command pushed by main agent at 10:30:45"
+  },
+  {
+    "cmd": "check_prs",
+    "_note": "Bot should report PR statuses back via results/latest.json"
+  }
+]
