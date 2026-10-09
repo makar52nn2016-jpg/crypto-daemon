@@ -5,12 +5,17 @@ on:
     - cron: '*/30 * * * *'  # every 30 min
   workflow_dispatch:
 
+permissions:
+  contents: write  # allow the bot to commit logs back
+
 jobs:
   cycle:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}  # use PAT so bot can push
       - name: Run agent v2.0
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -34,4 +39,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add logs/agent_v2.log
           git commit -m "chore: agent v2.0 cycle $ts" || echo "Nothing to commit"
-          git push
+          git push || echo "Push failed (may be no changes)"
