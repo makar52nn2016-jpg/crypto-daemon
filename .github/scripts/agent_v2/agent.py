@@ -20,11 +20,24 @@ META_MASK = '0x30450A8B96535e4ee1897f1E59ff2556f6191bcc'
 STELLAR_WALLET = 'GBAUE3TLQMHDFGHQVLHE4LCJJQKVSSHM6YB2SCG2VX2M7XXKWPWCJBRQ'
 LIGHTNING = 'wakefulneon901@wallelofsatoshi.com'
 
-# Whitelisted platforms (priority 1-3)
+# Whitelisted platforms (priority 1-3) — UPDATED 2026-10-09 after scam cluster purge
 WHITELIST = {
-    'priority_1': ['gofrantic.com', 'stackernews/stacker.news', 'getAlby/lightning-browser-extension'],
-    'priority_2': ['Escaro-Labs/escaro', 'AstralDeep'],  # AstralDeep only if CI green + merge<48h
-    'priority_3': ['taskmarket.dev (Daydreams)', 'any EVM/Base escrow with releaseBounty()'],
+    'priority_1': [
+        'gofrantic.com',                       # USDC on Base via x402, public ledger
+        'stackernews/stacker.news',            # Lightning sats, instant on merge (CONFIRMED payouts in awards.csv)
+        'getAlby/lightning-browser-extension', # Lightning sats, WebLN infrastructure
+    ],
+    'priority_2': [
+        'Immunefi',                            # Bug bounty platform, USDC payouts
+        'HackerOne',                            # Bug bounty, bank transfer
+        'gigs.sh',                              # Nostr/Lightning task aggregator
+    ],
+    'priority_3': [
+        # Only repos with >1000 stars AND >50 external merges in last 30 days
+        'repos with label:"bug bounty" OR label:"security" OR label:"bounty-paid"',
+        'Nostr relay repos (strfry, NOSTR, nostr-relay)',
+        'taskmarket.dev (Daydreams) — only if ledger confirmed',
+    ],
 }
 
 # BLACKLIST — never work with these
@@ -64,15 +77,8 @@ FRANTIC_CLAIMS = [
 ACTIVE_PRS = [
     # AstralDeep — CRITICAL: reservation expires 2026-10-09T20:48:48Z
     # AstralDeep #26 — CLOSED 2026-10-09T20:40:08Z (reservation expired, no merge)
-    # Escaro batch — all opened 2026-10-09, all USDC on Stellar
-    ('Escaro-Labs/escaro', 114, '$90 USDC', '2026-10-09', 'Escaro'),
-    ('Escaro-Labs/escaro', 123, '$45 USDC', '2026-10-09', 'Escaro'),
-    ('Escaro-Labs/escaro', 124, '$60 USDC', '2026-10-09', 'Escaro'),
-    ('Escaro-Labs/escaro', 127, '$40 USDC', '2026-10-09', 'Escaro'),
-    ('Escaro-Labs/escaro', 128, '$65 USDC', '2026-10-09', 'Escaro'),
-    ('Escaro-Labs/escaro', 129, '$60 USDC', '2026-10-09', 'Escaro'),
-    ('Escaro-Labs/escaro', 130, '$65 USDC', '2026-10-09', 'Escaro'),
-    ('Escaro-Labs/escaro', 131, '$85 USDC', '2026-10-09', 'Escaro'),
+    # ALL Escaro PRs CLOSED 2026-10-09 — confirmed scam cluster
+    # See BLACKLIST for details
     # SecureBananaLabs — STALLED (9+ days silent, in BLACKLIST)
     ('SecureBananaLabs/bug-bounty', 12770, '$430 USDC', '2026-10-01', 'SecureBananaLabs'),
     ('SecureBananaLabs/bug-bounty', 12771, '$780 USDC', '2026-10-01', 'SecureBananaLabs'),
@@ -315,6 +321,26 @@ def scan_stacker_news():
     """Scan Stacker News for new bounty-eligible issues."""
     log('Scanning Stacker News for new issues...')
     items = github_search_issues('repo:stackernews/stacker.news is:issue is:open sort:created-desc', limit=10)
+
+def scan_bug_bounty_programs():
+    """Scan GitHub for repos with bug bounty / security labels in high-star repos."""
+    log('Scanning for bug bounty / security issues in legit repos...')
+    # Only repos with >1000 stars and recent external merges
+    queries = [
+        'label:"bug bounty" is:issue is:open sort:updated-desc',
+        'label:"security" is:issue is:open sort:updated-desc',
+        'label:"bounty-paid" is:issue is:open sort:updated-desc',
+        'label:"\xf0\x9f\x92\x8e Bounty" is:issue is:open sort:updated-desc stars:>1000',
+    ]
+    for q in queries:
+        items = github_search_issues(q, limit=10)
+        for it in items[:5]:
+            repo = it.get('repository_url','').split('repos/')[-1] if it.get('repository_url') else '?'
+            comments = it.get('comments', 0)
+            if comments > 20:
+                continue
+            labels = [l['name'] for l in it.get('labels', [])]
+            log(f'  CANDIDATE: {repo}#{it.get("number")} [{comments}c] {it.get("title","")[:60]}', 'CANDIDATE')
     candidates = []
     for it in items[:10]:
         title = it.get('title', '')
@@ -353,6 +379,9 @@ def main():
     
     # 4. Check active GitHub PRs (smart ping rule)
     check_active_prs()
+
+    # 4b. Scan for bug bounty / security programs in legit repos
+    scan_bug_bounty_programs()
     
     # 5. Monitor Base USDC balance
     balance = monitor_base_payout(META_MASK)
