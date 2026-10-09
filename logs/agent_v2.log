@@ -102,3 +102,19 @@ Traceback (most recent call last):
                                     ^^^^^^^^^^^^^^^^^^
 TypeError: object of type 'NoneType' has no len()
 
+=== Run 2026-10-09T21:22:22Z ===
+{"ts": "2026-10-09T21:22:21", "level": "CYCLE_START", "msg": "=== Agent v2.0 cycle start ==="}
+{"ts": "2026-10-09T21:22:21", "level": "INFO", "msg": "Scanning Frantic board..."}
+{"ts": "2026-10-09T21:22:21", "level": "INFO", "msg": "Frantic candidates: 0"}
+{"ts": "2026-10-09T21:22:21", "level": "INFO", "msg": "Checking Frantic claims..."}
+{"ts": "2026-10-09T21:22:21", "level": "CLAIM_STATUS", "msg": "  claim 467ca1b3 (#128 $8): status=delivered, judged=None, rejected=None"}
+{"ts": "2026-10-09T21:22:21", "level": "INFO", "msg": "Scanning Stacker News for new issues..."}
+{"ts": "2026-10-09T21:22:22", "level": "DEBUG", "msg": "github_search_issues: 10 results for \"repo:stackernews/stacker.news is:issue is:open sort:created-\""}
+Traceback (most recent call last):
+  File "/home/runner/work/crypto-daemon/crypto-daemon/.github/scripts/agent_v2/agent.py", line 393, in <module>
+    main()
+  File "/home/runner/work/crypto-daemon/crypto-daemon/.github/scripts/agent_v2/agent.py", line 378, in main
+    log(f'Stacker News candidates: {len(sn_candidates)}')
+                                    ^^^^^^^^^^^^^^^^^^
+TypeError: object of type 'NoneType' has no len()
+
