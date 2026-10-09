@@ -242,7 +242,7 @@ def check_active_prs():
     """Check active GitHub PRs for age and ping-worthiness."""
     log('Checking active GitHub PRs...')
     now = datetime.now(timezone.utc)
-    for repo, num, amount, date_str in ACTIVE_PRS:
+    for repo, num, amount, date_str, platform in ACTIVE_PRS:
         # PR age in days
         try:
             created = datetime.fromisoformat(date_str + 'T00:00:00+00:00')
@@ -289,7 +289,7 @@ def check_active_prs():
                 level += ' STALLED'
             elif needs_ping:
                 level += ' PING_NEEDED'
-            log(f'  {repo}#{num} ({amount}): age={age_days}d, last_comment={since_last_comment_h:.1f}h ago, needs_ping={needs_ping}, stalled={stalled}',
+            log(f'  [{platform}] {repo}#{num} ({amount}): age={age_days}d, last_comment={since_last_comment_h:.1f}h ago, needs_ping={needs_ping}, stalled={stalled}',
                 level)
         except Exception as e:
             log(f'  {repo}#{num}: API error {e}', 'WARN')
