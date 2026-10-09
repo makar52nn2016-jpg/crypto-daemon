@@ -174,8 +174,13 @@ def monitor_base_payout(wallet):
         with urllib.request.urlopen(req, timeout=10, context=ctx) as r:
             d = json.loads(r.read())
         result = d.get('result', '0x0')
+        error = d.get('error')
+        if error:
+            return {'wallet': wallet, 'usdc_balance': 0, 'note': f'RPC error: {error.get("message","")[:100]}'}
         if result and result.startswith('0x'):
-            balance = int(result, 16) / 1e6  # USDC has 6 decimals
+            # 0x or 0x0 = 0 balance
+            hex_str = result[2:] or '0'
+            balance = int(hex_str, 16) / 1e6  # USDC has 6 decimals
             return {'wallet': wallet, 'usdc_balance': balance, 'raw': result[:30]}
         return {'wallet': wallet, 'usdc_balance': 0, 'note': 'no result', 'raw_response': str(d)[:200]}
     except Exception as e:
@@ -253,7 +258,20 @@ def check_active_prs():
                 last_dt = datetime.fromisoformat(last_comment_at.replace('Z', '+00:00'))
                 since_last_comment_h = (now - last_dt).total_seconds() / 3600
             else:
-                since_last_comment_h = age_days * 24
+                # No comments: use PR creation date as the "last activity" baseline
+                try:
+                    pr_url = f'https://api.github.com/repos/{repo}/pulls/{num}'
+                    pr_req = urllib.request.Request(pr_url)
+                    pr_req.add_header('Authorization', f'Bearer {GH_PAT}')
+                    pr_req.add_header('Accept', 'application/vnd.github+json')
+                    pr_req.add_header('User-Agent', 'agent-v2')
+                    with urllib.request.urlopen(pr_req, timeout=10, context=ctx) as pr_r:
+                        pr_d = json.loads(pr_r.read())
+                    created_at = pr_d.get('created_at', date_str + 'T00:00:00Z')
+                    created_dt = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                    since_last_comment_h = (now - created_dt).total_seconds() / 3600
+                except Exception:
+                    since_last_comment_h = age_days * 24
             # Smart ping rule: PR open >48h AND last activity >24h ago
             needs_ping = age_days >= 2 and since_last_comment_h >= 24
             log(f'  {repo}#{num} ({amount}): age={age_days}d, last_comment={since_last_comment_h:.1f}h ago, needs_ping={needs_ping}',
