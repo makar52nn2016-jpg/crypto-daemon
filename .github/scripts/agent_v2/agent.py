@@ -59,7 +59,7 @@ FRANTIC_CLAIMS = [
 # STALLED rule: PR open >=7d -> log STALLED
 ACTIVE_PRS = [
     # AstralDeep — CRITICAL: reservation expires 2026-10-09T20:48:48Z
-    ('AstralDeep/AstralPrimitives', 26, '100 pts', '2026-10-05', 'AstralDeep'),
+    # AstralDeep #26 — CLOSED 2026-10-09T20:40:08Z (reservation expired, no merge)
     # Escaro batch — all opened 2026-10-09, all USDC on Stellar
     ('Escaro-Labs/escaro', 114, '$90 USDC', '2026-10-09', 'Escaro'),
     ('Escaro-Labs/escaro', 123, '$45 USDC', '2026-10-09', 'Escaro'),
