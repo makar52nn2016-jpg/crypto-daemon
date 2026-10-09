@@ -1,0 +1,22 @@
+name: Frantic Claim Detail
+
+on:
+  workflow_dispatch:
+    inputs:
+      claim_id:
+        description: 'Claim ID'
+        required: true
+        default: '467ca1b3-d99d-44ec-8fe5-134e3f118282'
+
+jobs:
+  detail:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Detail
+        env:
+          FRANTIC_TOKEN: ${{ secrets.FRANTIC_AGENT_TOKEN }}
+          CLAIM_ID: ${{ inputs.claim_id }}
+          AGENT_KID: agent-b94b60
+        run: python3 .github/scripts/frantic_claim_detail.py
