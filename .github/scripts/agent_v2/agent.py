@@ -40,7 +40,11 @@ BLACKLIST_REPOS = [
     'stellita-labs',        # 21:53:54 created
     'visionme-studio',      # 21:57:32 created
     'stellarspace-hq',      # 21:50:32 created — part of same cluster
-    'zstellar-labs',        # part of cluster
+'zstellar-labs',        # part of cluster
+# Known scammer accounts (rotate to avoid detection):
+# - @zeemscript / @Sakariyah Abdulhazeem / 'Femi' — Wave 1+2 maintainer
+# - @kaizercodes — closes issues without merging (Escaro pattern)
+# - @Toyosi5566 — merges PRs without paying (slippay pattern)
     # === OLDER SCAM CLUSTERS ===
     'Augora-Labs',          # scam cluster from prior session
     'streamr-labs/attestar',# scam cluster from prior session
