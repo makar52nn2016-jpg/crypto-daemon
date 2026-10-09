@@ -4,15 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       bounty_id:
-        description: 'Bounty number to claim (e.g. 130 for $3 Reddit, 128 for $8 citation)'
+        description: 'Bounty number (130=$3 Reddit, 128=$8 citation, 129=$16, 33=$20 Sourcey)'
         required: true
         default: '130'
       action:
-        description: 'Action: status | claim | deliver | list'
+        description: 'status | list | claim | deliver'
         required: true
         default: 'status'
       artifact_url:
-        description: 'For deliver: URL of artifact to submit as evidence'
+        description: 'For deliver: URL of artifact'
         required: false
         default: ''
 
@@ -32,66 +32,81 @@ jobs:
           
           echo "=== Frantic agent: $AGENT_KID ==="
           echo "=== Action: $ACTION on bounty $BOUNTY_ID ==="
-          echo ""
           
-          if [ "$ACTION" == "status" ]; then
-            echo "=== AUTHENTICATED agent status ==="
-            curl -s "https://gofrantic.com/v1/agents/$AGENT_KID/status" \
-              -H "Authorization: Bearer $FRANTIC_TOKEN" | python3 -m json.tool | head -100
-          fi
-          
-          if [ "$ACTION" == "list" ]; then
-            echo "=== Open bounties ==="
-            curl -s "https://gofrantic.com/v1/board" | python3 -c "
-            import sys, json
-            d = json.load(sys.stdin)
-            bounties = d.get('board', {}).get('open_bounties', []) or []
-            print(f'Total open bounties: {len(bounties)}')
-            for b in bounties[:15]:
-                cp = b.get('claim_progress', {}) or {}
-                print(f\"  #{b.get('number')} ${b.get('price_usd')} | {cp.get('available','?')}/{cp.get('capacity','?')} slots | {b.get('title','')[:60]}\")
-            "
-          fi
-          
-          if [ "$ACTION" == "claim" ]; then
-            echo "=== Claiming bounty #$BOUNTY_ID ==="
-            RESPONSE=$(curl -s -X POST "https://gofrantic.com/v1/claims" \
-              -H "Authorization: Bearer $FRANTIC_TOKEN" \
-              -H "Content-Type: application/json" \
-              -d "{\"bounty\": $BOUNTY_ID, \"agent_kid\": \"$AGENT_KID\"}")
-            echo "$RESPONSE" | python3 -m json.tool 2>&1 || echo "$RESPONSE"
-          fi
-          
-          if [ "$ACTION" == "deliver" ]; then
-            echo "=== Delivering to bounty #$BOUNTY_ID with artifact: $ARTIFACT_URL ==="
-            # First get latest claim_id for this bounty
-            STATUS=$(curl -s "https://gofrantic.com/v1/agents/$AGENT_KID/status" \
-              -H "Authorization: Bearer $FRANTIC_TOKEN")
-            CLAIM_ID=$(echo "$STATUS" | python3 -c "
-            import sys, json
-            d = json.load(sys.stdin)
-            work = d.get('work', {})
-            opens = work.get('open', []) or []
-            for c in opens:
-                if str(c.get('bounty','')) == '$BOUNTY_ID':
-                    print(c.get('id'))
-                    break
-            " 2>&1)
-            echo "Latest claim_id: $CLAIM_ID"
-            
-            if [ -z "$CLAIM_ID" ]; then
-              echo "No active claim for bounty #$BOUNTY_ID"
-              exit 1
-            fi
-            
-            # Submit delivery
-            RESPONSE=$(curl -s -X POST "https://gofrantic.com/v1/deliveries" \
-              -H "Authorization: Bearer $FRANTIC_TOKEN" \
-              -H "Content-Type: application/json" \
-              -d "{
-                \"claim_id\": \"$CLAIM_ID\",
-                \"agent_kid\": \"$AGENT_KID\",
-                \"artifact_refs\": [\"public_url=$ARTIFACT_URL\"]
-              }")
-            echo "$RESPONSE" | python3 -m json.tool 2>&1 || echo "$RESPONSE"
-          fi
+          case "$ACTION" in
+            status)
+              curl -s "https://gofrantic.com/v1/agents/$AGENT_KID/status" \
+                -H "Authorization: Bearer $FRANTIC_TOKEN" > /tmp/status.json
+              python3 << 'PYEOF'
+          import json
+          with open('/tmp/status.json') as f: d = json.load(f)
+          agent = d.get('agent', {})
+          work = d.get('work', {}).get('summary', {})
+          print('Agent:', agent.get('slug'))
+          print('Eligible:', agent.get('eligible'))
+          print('Earned USD:', agent.get('earnedUsd'))
+          print('Work summary:', work)
+          opens = d.get('work', {}).get('open', []) or []
+          print('Open claims:', len(opens))
+          for c in opens:
+              print('  -', c.get('bounty'), c.get('stage'), c.get('id'))
+              PYEOF
+              ;;
+            list)
+              curl -s "https://gofrantic.com/v1/board" > /tmp/board.json
+              python3 << 'PYEOF'
+          import json
+          with open('/tmp/board.json') as f: d = json.load(f)
+          bounties = d.get('board', {}).get('open_bounties', []) or []
+          print('Total open bounties:', len(bounties))
+          for b in bounties[:15]:
+              cp = b.get('claim_progress', {}) or {}
+              num = b.get('number')
+              price = b.get('price_usd')
+              avail = cp.get('available')
+              cap = cp.get('capacity')
+              title = b.get('title', '')[:60]
+              print('  #%s $%s | %s/%s slots | %s' % (num, price, avail, cap, title))
+              PYEOF
+              ;;
+            claim)
+              echo "Claiming bounty #$BOUNTY_ID"
+              curl -s -X POST "https://gofrantic.com/v1/claims" \
+                -H "Authorization: Bearer $FRANTIC_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d "{\"bounty\": $BOUNTY_ID, \"agent_kid\": \"$AGENT_KID\"}" > /tmp/claim.json
+              python3 << 'PYEOF'
+          import json
+          with open('/tmp/claim.json') as f: d = json.load(f)
+          print(json.dumps(d, indent=2)[:2000])
+              PYEOF
+              ;;
+            deliver)
+              echo "Delivering to bounty #$BOUNTY_ID with artifact: $ARTIFACT_URL"
+              curl -s "https://gofrantic.com/v1/agents/$AGENT_KID/status" \
+                -H "Authorization: Bearer $FRANTIC_TOKEN" > /tmp/status.json
+              CLAIM_ID=$(python3 -c "
+          import json
+          with open('/tmp/status.json') as f: d = json.load(f)
+          opens = d.get('work', {}).get('open', []) or []
+          for c in opens:
+              if str(c.get('bounty','')) == '$BOUNTY_ID':
+                  print(c.get('id'))
+                  break
+          ")
+              echo "Claim ID: $CLAIM_ID"
+              if [ -z "$CLAIM_ID" ]; then
+                echo "No active claim for bounty #$BOUNTY_ID"
+                exit 1
+              fi
+              curl -s -X POST "https://gofrantic.com/v1/deliveries" \
+                -H "Authorization: Bearer $FRANTIC_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d "{\"claim_id\": \"$CLAIM_ID\", \"agent_kid\": \"$AGENT_KID\", \"artifact_refs\": [\"public_url=$ARTIFACT_URL\"]}" > /tmp/deliver.json
+              python3 -c "
+          import json
+          with open('/tmp/deliver.json') as f: d = json.load(f)
+          print(json.dumps(d, indent=2)[:2000])
+              "
+              ;;
+          esac
