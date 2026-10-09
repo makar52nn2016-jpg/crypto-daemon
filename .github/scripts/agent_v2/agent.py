@@ -39,6 +39,7 @@ BLACKLIST_REPOS = [
     'slippay-labs',         # 21:47:15 created — CONFIRMED unpaid $135 (PRs #124, #128 merged but never paid)
     'stellita-labs',        # 21:53:54 created
     'visionme-studio',      # 21:57:32 created
+    'stellarspace-hq',      # 21:50:32 created — part of same cluster
     'zstellar-labs',        # part of cluster
     # === OLDER SCAM CLUSTERS ===
     'Augora-Labs',          # scam cluster from prior session
