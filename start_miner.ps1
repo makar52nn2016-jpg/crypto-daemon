@@ -1,9 +1,9 @@
-# Monero (XMR) CPU Miner — earns ~$0.01-0.05/day passive income
+# Monero (XMR) CPU Miner --- earns ~$0.01-0.05/day passive income
 # Run: powershell -ExecutionPolicy Bypass -File start_miner.ps1
 # Payment wallet: 48Q7T5mN5eR3y2KqBw8m8Yq2cWQkLf3v9j5xB4HsN6Qr9tZ1w
 # (Replace with YOUR XMR address from cakewallet.com or monero-wallet)
 
-Write-Host "🚜 Starting Monero CPU Miner..." -ForegroundColor Green
+Write-Host "---- Starting Monero CPU Miner..." -ForegroundColor Green
 Write-Host "   Pool: supportxmr.com:3333" -ForegroundColor Cyan
 Write-Host "   Payment: see config below" -ForegroundColor Cyan
 
