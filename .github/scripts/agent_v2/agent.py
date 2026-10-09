@@ -41,16 +41,24 @@ FRANTIC_CLAIMS = [
     ('467ca1b3-d99d-44ec-8fe5-134e3f118282', 128, '$8'),  # Sourcey citation
 ]
 
-# Active GitHub PRs to monitor
+# Active GitHub PRs to monitor — each entry is (repo, pr_num, bounty_label, opened_at_iso, platform)
+# Smart ping rule: PR open >=48h AND last comment >=24h ago -> log PING_NEEDED
+# STALLED rule: PR open >=7d -> log STALLED
 ACTIVE_PRS = [
-    ('AstralDeep/AstralPrimitives', 26, '100 pts', '2026-10-09'),
-    ('Escaro-Labs/escaro', 114, '$90 USDC', '2026-10-09'),
-    ('Escaro-Labs/escaro', 123, '$45 USDC', '2026-10-09'),
-    ('Escaro-Labs/escaro', 124, '$60 USDC', '2026-10-09'),
-    ('Escaro-Labs/escaro', 127, '$40 USDC', '2026-10-09'),
-    ('Escaro-Labs/escaro', 128, '$65 USDC', '2026-10-09'),
-    ('SecureBananaLabs/bug-bounty', 12770, '$430 USDC', '2026-10-01'),
-    ('SecureBananaLabs/bug-bounty', 12771, '$780 USDC', '2026-10-01'),
+    # AstralDeep — CRITICAL: reservation expires 2026-10-09T20:48:48Z
+    ('AstralDeep/AstralPrimitives', 26, '100 pts', '2026-10-05', 'AstralDeep'),
+    # Escaro batch — all opened 2026-10-09, all USDC on Stellar
+    ('Escaro-Labs/escaro', 114, '$90 USDC', '2026-10-09', 'Escaro'),
+    ('Escaro-Labs/escaro', 123, '$45 USDC', '2026-10-09', 'Escaro'),
+    ('Escaro-Labs/escaro', 124, '$60 USDC', '2026-10-09', 'Escaro'),
+    ('Escaro-Labs/escaro', 127, '$40 USDC', '2026-10-09', 'Escaro'),
+    ('Escaro-Labs/escaro', 128, '$65 USDC', '2026-10-09', 'Escaro'),
+    ('Escaro-Labs/escaro', 129, '$60 USDC', '2026-10-09', 'Escaro'),
+    ('Escaro-Labs/escaro', 130, '$65 USDC', '2026-10-09', 'Escaro'),
+    ('Escaro-Labs/escaro', 131, '$85 USDC', '2026-10-09', 'Escaro'),
+    # SecureBananaLabs — STALLED (9+ days silent, in BLACKLIST)
+    ('SecureBananaLabs/bug-bounty', 12770, '$430 USDC', '2026-10-01', 'SecureBananaLabs'),
+    ('SecureBananaLabs/bug-bounty', 12771, '$780 USDC', '2026-10-01', 'SecureBananaLabs'),
 ]
 
 ctx = ssl.create_default_context()
@@ -274,8 +282,15 @@ def check_active_prs():
                     since_last_comment_h = age_days * 24
             # Smart ping rule: PR open >48h AND last activity >24h ago
             needs_ping = age_days >= 2 and since_last_comment_h >= 24
-            log(f'  {repo}#{num} ({amount}): age={age_days}d, last_comment={since_last_comment_h:.1f}h ago, needs_ping={needs_ping}',
-                'PR_STATUS' + (' PING_NEEDED' if needs_ping else ''))
+            # STALLED rule: PR open >=7d
+            stalled = age_days >= 7
+            level = 'PR_STATUS'
+            if stalled:
+                level += ' STALLED'
+            elif needs_ping:
+                level += ' PING_NEEDED'
+            log(f'  {repo}#{num} ({amount}): age={age_days}d, last_comment={since_last_comment_h:.1f}h ago, needs_ping={needs_ping}, stalled={stalled}',
+                level)
         except Exception as e:
             log(f'  {repo}#{num}: API error {e}', 'WARN')
 
