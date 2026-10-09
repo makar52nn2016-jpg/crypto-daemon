@@ -30,10 +30,22 @@ WHITELIST = {
 # BLACKLIST — never work with these
 BLACKLIST_PLATFORMS = ['Opire', 'Gitcoin', 'Bounties Network']
 BLACKLIST_REPOS = [
-    'vouchlabsio', 'stellita-labs', 'visionme-studio', 'zstellar-labs',  # 2026-10-06 scam cluster
-    'slippay-labs', 'Augora-Labs', 'streamr-labs/attestar',  # older scam clusters from prior session
-    'MisakaNet',  # zero bounties (opirebot literal: "no reward yet")
-    'SecureBananaLabs/bug-bounty',  # 0 merges in 14+ days, $1210 stuck
+    # === CONFIRMED SCAM CLUSTER (2026-10-06) ===
+    # All 4 orgs created within 12 minutes of each other on 2026-10-06.
+    # Same maintainer "Femi" / @Toyosi5566, same bounty template ($XX + ETA 24h).
+    # Self-merge pattern (PR author = commit author). Zero payout confirmations.
+    # slippay-labs CONFIRMED SCAM: 2 PRs merged 2026-10-08 ($75+$60=$135 owed), never paid.
+    'vouchlabsio',          # 21:45:40 created
+    'slippay-labs',         # 21:47:15 created — CONFIRMED unpaid $135 (PRs #124, #128 merged but never paid)
+    'stellita-labs',        # 21:53:54 created
+    'visionme-studio',      # 21:57:32 created
+    'zstellar-labs',        # part of cluster
+    # === OLDER SCAM CLUSTERS ===
+    'Augora-Labs',          # scam cluster from prior session
+    'streamr-labs/attestar',# scam cluster from prior session
+    # === ZERO-PAYOUT PLATFORMS ===
+    'MisakaNet',            # opirebot literal: "issue does not have any reward yet!" — points only, not money
+    'SecureBananaLabs/bug-bounty',  # STALLED: 9+ days silent, 0 merges in 14+ days, $1210 stuck
 ]
 
 # Active Frantic claims to monitor
