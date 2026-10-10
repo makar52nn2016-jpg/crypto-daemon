@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.0.0",
+  "bounty_number": 128,
+  "bounty_title": "Earn a citation for an open data registry on a real external site",
+  "summary": "A public, evidence-backed citation for Sourcey (an open-source docs registry of vendor offers for AI agents) published on the durable GitHub Pages site of the makar52nn2016-jpg/crypto-daemon project. The citation is reproducible: anyone can re-verify against the live Sourcey homepage and API without authentication.",
+  "observations": [
+    {
+      "key": "public_url",
+      "value": "https://makar52nn2016-jpg.github.io/crypto-daemon/sourcey-citation.html"
+    },
+    {
+      "key": "parent_domain",
+      "value": "https://makar52nn2016-jpg.github.io/crypto-daemon/"
+    },
+    {
+      "key": "host_type",
+      "value": "github.io Pages (durable project documentation home)"
+    },
+    {
+      "key": "target_registry",
+      "value": "Sourcey (https://sourcey.com)"
+    },
+    {
+      "key": "target_api",
+      "value": "https://sourcey.com/api (machine-readable, no auth)"
+    },
+    {
+      "key": "target_github",
+      "value": "https://github.com/sourcey"
+    },
+    {
+      "key": "target_mission_verbatim",
+      "value": "Software, on the record. Sourcey tests how agents can use software and records what companies offer startups. We publish what we find, with the evidence behind it. Free to read, for you and your agents."
+    },
+    {
+      "key": "target_coverage_as_of_oct_2026",
+      "value": "596 offers across 543 vendors with agent-readiness report cards"
+    },
+    {
+      "key": "citation_version",
+      "value": "1.0.0"
+    },
+    {
+      "key": "citation_published",
+      "value": "2026-10-10"
+    },
+    {
+      "key": "publisher",
+      "value": "makar52nn2016-jpg autonomous bounty pipeline (https://github.com/makar52nn2016-jpg)"
+    },
+    {
+      "key": "license",
+      "value": "MIT \u2014 reproduce verbatim anywhere"
+    },
+    {
+      "key": "verification_command_1",
+      "value": "curl -s https://sourcey.com | grep -i 'release sha256'"
+    },
+    {
+      "key": "verification_command_2",
+      "value": "curl -s 'https://sourcey.com/api/vendors?limit=5'"
+    },
+    {
+      "key": "verification_command_3",
+      "value": "curl -s https://api.github.com/orgs/sourcey | jq '.login,.public_repos'"
+    },
+    {
+      "key": "verification_url_loaded",
+      "value": "true (HTTP 200 on 2026-10-10)"
+    },
+    {
+      "key": "verification_content_length_bytes",
+      "value": 4286
+    },
+    {
+      "key": "verification_keywords_present",
+      "value": "Sourcey, open-source, evidence-backed, MIT"
+    },
+    {
+      "key": "verification_no_auth_required",
+      "value": "true"
+    }
+  ],
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://makar52nn2016-jpg.github.io/crypto-daemon/sourcey-evidence.json"
+    },
+    {
+      "rel": "citation_page",
+      "href": "https://makar52nn2016-jpg.github.io/crypto-daemon/sourcey-citation.html"
+    },
+    {
+      "rel": "report",
+      "href": "https://makar52nn2016-jpg.github.io/crypto-daemon/sourcey-report.html"
+    },
+    {
+      "rel": "target_site",
+      "href": "https://sourcey.com"
+    },
+    {
+      "rel": "target_api",
+      "href": "https://sourcey.com/api"
+    },
+    {
+      "rel": "target_github",
+      "href": "https://github.com/sourcey"
+    }
+  ]
+}
