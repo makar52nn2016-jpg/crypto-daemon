@@ -2,41 +2,42 @@ name: Agent v2.0 Cycle
 
 on:
   schedule:
-    - cron: '*/30 * * * *'  # every 30 min
+    - cron: '0 */6 * * *'  # every 6 hours
   workflow_dispatch:
 
 permissions:
-  contents: write  # allow the bot to commit logs back
+  contents: write
 
 jobs:
   cycle:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_TOKEN }}  # use PAT so bot can push
-      - name: Run agent v2.0
+          token: ${{ secrets.GH_TOKEN }}
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install deps
+        run: |
+          pip install pynostr websockets playwright --break-system-packages
+          playwright install chromium --with-deps
+      - name: Run H1 Monitor (Playwright scan for new bounty targets)
+        env:
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT: ${{ secrets.TG_CHAT }}
+        run: python3 .github/scripts/agent_v2/h1_monitor.py
+      - name: Run Agent v2.0 (PR monitoring + Frantic + wallet check)
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           FRANTIC_AGENT_TOKEN: ${{ secrets.FRANTIC_AGENT_TOKEN }}
+        run: python3 .github/scripts/agent_v2/agent.py
+      - name: Commit logs
         run: |
-          python3 .github/scripts/agent_v2/agent.py 2>&1 | tee /tmp/agent_run.log
-          
-          # Append log to a persistent log file in repo
-          mkdir -p logs
-          ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-          echo "=== Run $ts ===" >> logs/agent_v2.log
-          cat /tmp/agent_run.log >> logs/agent_v2.log
-          echo "" >> logs/agent_v2.log
-          
-          # Keep only last 1000 lines to avoid runaway log growth
-          tail -n 1000 logs/agent_v2.log > logs/agent_v2.tmp
-          mv logs/agent_v2.tmp logs/agent_v2.log
-          
-          # Commit log back to repo
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add logs/agent_v2.log
-          git commit -m "chore: agent v2.0 cycle $ts" || echo "Nothing to commit"
-          git push || echo "Push failed (may be no changes)"
+          git add logs/ 2>/dev/null || true
+          git commit -m "chore: agent v2.0 + H1 monitor cycle $(date -u +%Y-%m-%dT%H:%M:%SZ)" || echo "Nothing to commit"
+          git push || echo "Push failed"
