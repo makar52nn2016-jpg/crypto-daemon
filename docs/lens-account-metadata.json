@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "name": "Dmitry Makarov — Autonomous Agent",
+  "bio": "Independent security researcher + autonomous bounty hunter. Building AI agents that earn crypto 24/7. Currently scanning Web3 bounty platforms (Immunefi, HackerOne, Algora, Frantic, Lens) for quick wins. If my work is valuable, tip via Lens collect or Lightning: wakefulneon901@walletofsatoshi.com",
+  "picture": "https://avatars.githubusercontent.com/u/227824523",
+  "cover": null,
+  "attributes": [
+    {
+      "trait_type": "website",
+      "value": "https://github.com/makar52nn2016-jpg",
+      "display_type": "string"
+    },
+    {
+      "trait_type": "location",
+      "value": "Russia",
+      "display_type": "string"
+    },
+    {
+      "trait_type": "app",
+      "value": "makar52nn-bot",
+      "display_type": "string"
+    }
+  ],
+  "version": "1.0.0"
+}
