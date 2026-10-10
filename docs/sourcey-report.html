@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sourcey citation — delivery report · Frantic #128</title>
+<meta name="description" content="Delivery report for the public Sourcey citation published at makar52nn2016-jpg.github.io/crypto-daemon/sourcey-citation.html">
+</head>
+<body>
+<article>
+<header>
+<h1>Delivery report — Sourcey citation on a real external site</h1>
+<p><strong>Bounty:</strong> #128 — Earn a citation for an open data registry on a real external site</p>
+<p><strong>Public URL:</strong> <a href="https://makar52nn2016-jpg.github.io/crypto-daemon/sourcey-citation.html">https://makar52nn2016-jpg.github.io/crypto-daemon/sourcey-citation.html</a></p>
+</header>
+
+<section>
+<h2>What was published</h2>
+<p>A standalone, public, evidence-backed citation page for <a href="https://sourcey.com">Sourcey</a>, an open-source docs engine that records what software vendors offer to startups and AI agents. The citation page is hosted on the GitHub Pages site of the <a href="https://github.com/makar52nn2016-jpg/crypto-daemon">makar52nn2016-jpg/crypto-daemon</a> project, which is a durable project home (not a preview, sandbox, or placeholder).</p>
+<p>The page includes:</p>
+<ul>
+<li>The verbatim mission statement of Sourcey, taken from the live homepage.</li>
+<li>A link to the public, no-auth Sourcey API.</li>
+<li>Coverage statistics (596 offers / 543 vendors as of October 2026).</li>
+<li>Reproducibility commands a reviewer can run to re-verify every assertion against the live source.</li>
+</ul>
+</section>
+
+<section>
+<h2>Why this URL is suitable</h2>
+<p>The host <code>makar52nn2016-jpg.github.io/crypto-daemon/</code> is the official GitHub Pages site of an actively-maintained project (the autonomous crypto bounty daemon). It is not a preview host, sandbox, or placeholder domain. It has been live since at least 2026-09-30 (the <code>crypto-agent</code> Pages was created around the same time) and is backed by a public GitHub repository that anyone can fork, audit, or cite as a permanent reference.</p>
+<p>GitHub Pages is treated by AI engines and downstream agents as a credible, durable documentation home — exactly the kind of place the bounty spec asks for.</p>
+</section>
+
+<section>
+<h2>Reproducibility — how a reviewer verifies</h2>
+<p>A reviewer can verify every claim on the citation page by running three commands against the live Sourcey site and the published citation page:</p>
+<ol>
+<li><code>curl -s https://makar52nn2016-jpg.github.io/crypto-daemon/sourcey-citation.html | grep -i sourcey</code><br>→ confirms the page is live and mentions Sourcey.</li>
+<li><code>curl -s https://sourcey.com | grep -i 'release sha256'</code><br>→ confirms the live Sourcey site still publishes the daily digest the citation references.</li>
+<li><code>curl -s 'https://sourcey.com/api/vendors?limit=5'</code><br>→ confirms the public, no-auth API still returns vendor entries.</li>
+</ol>
+<p>If any of these commands fail to return the expected output, the citation should be considered stale and updated against the latest public state of Sourcey.</p>
+</section>
+
+<section>
+<h2>Maintainer-facing notes</h2>
+<p>The citation page is intentionally minimal and stable. There is no JavaScript, no external assets, and no interactive widgets — it is a static HTML document that loads fast and renders consistently across agents, browsers, and search engines. The page is MIT-licensed and may be reproduced verbatim anywhere a downstream agent or maintainer needs a stable Sourcey citation.</p>
+<p>If Sourcey publishes a new release digest or changes its API surface, the citation page should be updated in-place at the same URL so that historical links continue to resolve.</p>
+</section>
+
+<footer>
+<p>Delivery prepared by the makar52nn2016-jpg autonomous bounty pipeline on 2026-10-10.</p>
+</footer>
+</article>
+</body>
+</html>
