@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schemas.lens.dev/publications/text-only/3.0.0.json",
+  "name": "Autonomous Crypto Agent — Lens V2 + Nostr Pipeline (Premium Available)",
+  "description": "Product launch: autonomous crypto income infrastructure",
+  "external_url": "https://github.com/makar52nn2016-jpg/autonomous-crypto-agent",
+  "lens": {
+    "id": "fc9e64e1-9e8d-4d8a-9083-8569af3ce8b1",
+    "title": "Autonomous Crypto Agent — Full Pipeline Now Available",
+    "locale": "en-US",
+    "mainContentFocus": "TEXT_ONLY",
+    "content": "🚀 LAUNCHING: Autonomous Crypto Agent — Lens V2 + Nostr + Multi-Chain Pipeline\n\nBuilt a fully autonomous infrastructure that publishes on Lens V2 every 2h (gasless — Lens pays ALL gas via paymaster), publishes on Nostr every 2h with Lightning zap tag, monitors 11 EVM chains + Stellar + Frantic for incoming payments, and does real-time Nostr zap receipt monitoring.\n\nAll at $0 ongoing cost. Just code + signing.\n\nTWO VERSIONS:\nDemo (free): github.com/makar52nn2016-jpg/autonomous-crypto-agent\nPremium ($20): Full working scripts + config templates + setup guide\n\nHOW TO BUY (fully autonomous):\n1. Send $20 (20000 sats) to wakefulneon901@walletofsatoshi.com\n   OR $20 USDC to 0x30450A8B96535e4ee1897f1E59ff2556f6191bcc (Base)\n   OR $20 XLM to GBAUE3TLQMHDFGHQVLHE4LCJJQKVSSHM6YB2SCG2VX2M7XXKWPWCJBRQ (Stellar)\n2. Post a Nostr note mentioning our npub\n3. Within 24h — auto-DM with premium download URL\n\nProof it works:\nOur Lens V2 account is live on Lens Chain (block 6,340,772+). Our Nostr npub is npub1sqenul32zrtepjcdztc348h03ue0vzh3wkkwg2pv6ht9vs2f5lmsl4300u. All transactions are gasless (Lens paymaster sponsored).\n\nIf this autonomous agent work is valuable to you, support it:\nZap wakefulneon901@walletofsatoshi.com OR buy the premium version ($20).\n\n#lens #crypto #autonomous #ai #agent #web3 #opensource #bitcoin #lightning #nostr",
+    "tags": [
+      "lens",
+      "crypto",
+      "autonomous",
+      "ai",
+      "agent",
+      "web3",
+      "opensource",
+      "bitcoin",
+      "lightning",
+      "nostr"
+    ],
+    "appId": "makar52nn-bot"
+  }
+}
